@@ -321,9 +321,6 @@ End
 	#tag Constant, Name = alive, Type = Double, Dynamic = False, Default = \"1", Scope = Public
 	#tag EndConstant
 
-	#tag Constant, Name = Birth, Type = Double, Dynamic = False, Default = \"2", Scope = Public
-	#tag EndConstant
-
 	#tag Constant, Name = dead, Type = Double, Dynamic = False, Default = \"0", Scope = Public
 	#tag EndConstant
 
