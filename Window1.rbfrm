@@ -7,7 +7,7 @@ Begin Window Window1
    Frame           =   0
    FullScreen      =   False
    HasBackColor    =   False
-   Height          =   6.54e+2
+   Height          =   654
    ImplicitInstance=   True
    LiveResize      =   True
    MacProcID       =   0
@@ -23,514 +23,7 @@ Begin Window Window1
    Resizeable      =   True
    Title           =   "Game Of Life"
    Visible         =   True
-   Width           =   5.69e+2
-   Begin TabPanel TabPanel1
-      AutoDeactivate  =   True
-      Bold            =   ""
-      Enabled         =   True
-      Height          =   620
-      HelpTag         =   ""
-      Index           =   -2147483648
-      InitialParent   =   ""
-      Italic          =   ""
-      Left            =   0
-      LockBottom      =   True
-      LockedInPosition=   False
-      LockLeft        =   True
-      LockRight       =   True
-      LockTop         =   True
-      Panels          =   ""
-      Scope           =   0
-      SmallTabs       =   ""
-      TabDefinition   =   "Game Board\rSettings"
-      TabIndex        =   5
-      TabPanelIndex   =   0
-      TabStop         =   True
-      TextFont        =   "System"
-      TextSize        =   11
-      TextUnit        =   0
-      Top             =   0
-      Underline       =   ""
-      Value           =   1
-      Visible         =   True
-      Width           =   569
-      Begin Canvas Canvas1
-         AcceptFocus     =   ""
-         AcceptTabs      =   ""
-         AutoDeactivate  =   True
-         Backdrop        =   ""
-         DoubleBuffer    =   False
-         Enabled         =   True
-         EraseBackground =   True
-         Height          =   550
-         HelpTag         =   ""
-         Index           =   -2147483648
-         InitialParent   =   "TabPanel1"
-         Left            =   9
-         LockBottom      =   True
-         LockedInPosition=   False
-         LockLeft        =   True
-         LockRight       =   True
-         LockTop         =   True
-         Scope           =   0
-         TabIndex        =   0
-         TabPanelIndex   =   1
-         TabStop         =   True
-         Top             =   29
-         UseFocusRing    =   True
-         Visible         =   True
-         Width           =   550
-      End
-      Begin ComboBox ComboBox1
-         AutoComplete    =   False
-         AutoDeactivate  =   True
-         Bold            =   ""
-         DataField       =   ""
-         DataSource      =   ""
-         Enabled         =   True
-         Height          =   20
-         HelpTag         =   ""
-         Index           =   -2147483648
-         InitialParent   =   "TabPanel1"
-         InitialValue    =   "Load Preset\r\nGlider\r\nPulsar\r\nGun"
-         Italic          =   ""
-         Left            =   12
-         ListIndex       =   0
-         LockBottom      =   ""
-         LockedInPosition=   False
-         LockLeft        =   True
-         LockRight       =   ""
-         LockTop         =   True
-         Scope           =   0
-         TabIndex        =   0
-         TabPanelIndex   =   2
-         TabStop         =   True
-         TextFont        =   "System"
-         TextSize        =   11
-         TextUnit        =   0
-         Top             =   36
-         Underline       =   ""
-         UseFocusRing    =   True
-         Visible         =   True
-         Width           =   108
-      End
-      Begin Label Label1
-         AutoDeactivate  =   True
-         Bold            =   ""
-         DataField       =   ""
-         DataSource      =   ""
-         Enabled         =   True
-         Height          =   20
-         HelpTag         =   ""
-         Index           =   -2147483648
-         InitialParent   =   "TabPanel1"
-         Italic          =   ""
-         Left            =   12
-         LockBottom      =   ""
-         LockedInPosition=   False
-         LockLeft        =   True
-         LockRight       =   ""
-         LockTop         =   True
-         Multiline       =   ""
-         Scope           =   0
-         Selectable      =   False
-         TabIndex        =   1
-         TabPanelIndex   =   2
-         Text            =   "Cell Size:"
-         TextAlign       =   2
-         TextColor       =   &h000000
-         TextFont        =   "System"
-         TextSize        =   11
-         TextUnit        =   0
-         Top             =   97
-         Transparent     =   False
-         Underline       =   ""
-         Visible         =   True
-         Width           =   63
-      End
-      Begin Slider Slider1
-         AutoDeactivate  =   True
-         Enabled         =   True
-         Height          =   23
-         HelpTag         =   ""
-         Index           =   -2147483648
-         InitialParent   =   "TabPanel1"
-         Left            =   81
-         LineStep        =   1
-         LiveScroll      =   ""
-         LockBottom      =   ""
-         LockedInPosition=   False
-         LockLeft        =   True
-         LockRight       =   ""
-         LockTop         =   True
-         Maximum         =   25
-         Minimum         =   5
-         PageStep        =   1
-         Scope           =   0
-         TabIndex        =   2
-         TabPanelIndex   =   2
-         TabStop         =   True
-         TickStyle       =   0
-         Top             =   97
-         Value           =   10
-         Visible         =   True
-         Width           =   218
-      End
-      Begin ColorSelector ColorSelector1
-         AutoDeactivate  =   True
-         BorderColor     =   &h000000
-         BorderWidth     =   1
-         Enabled         =   True
-         FillColor       =   &h0000FF00
-         Height          =   25
-         HelpTag         =   ""
-         Index           =   -2147483648
-         InitialParent   =   "TabPanel1"
-         Left            =   81
-         LockBottom      =   ""
-         LockedInPosition=   False
-         LockLeft        =   True
-         LockRight       =   ""
-         LockTop         =   True
-         Scope           =   0
-         TabIndex        =   3
-         TabPanelIndex   =   2
-         Top             =   147
-         Visible         =   True
-         Width           =   25
-      End
-      Begin Label Label2
-         AutoDeactivate  =   True
-         Bold            =   ""
-         DataField       =   ""
-         DataSource      =   ""
-         Enabled         =   True
-         Height          =   20
-         HelpTag         =   ""
-         Index           =   -2147483648
-         InitialParent   =   "TabPanel1"
-         Italic          =   ""
-         Left            =   12
-         LockBottom      =   ""
-         LockedInPosition=   False
-         LockLeft        =   True
-         LockRight       =   ""
-         LockTop         =   True
-         Multiline       =   ""
-         Scope           =   0
-         Selectable      =   False
-         TabIndex        =   4
-         TabPanelIndex   =   2
-         Text            =   "Life Color:"
-         TextAlign       =   2
-         TextColor       =   &h000000
-         TextFont        =   "System"
-         TextSize        =   11
-         TextUnit        =   0
-         Top             =   147
-         Transparent     =   False
-         Underline       =   ""
-         Visible         =   True
-         Width           =   63
-      End
-      Begin ColorSelector ColorSelector2
-         AutoDeactivate  =   True
-         BorderColor     =   &h000000
-         BorderWidth     =   1
-         Enabled         =   True
-         FillColor       =   &h00C0C0C0
-         Height          =   25
-         HelpTag         =   ""
-         Index           =   -2147483648
-         InitialParent   =   "TabPanel1"
-         Left            =   201
-         LockBottom      =   ""
-         LockedInPosition=   False
-         LockLeft        =   True
-         LockRight       =   ""
-         LockTop         =   True
-         Scope           =   0
-         TabIndex        =   5
-         TabPanelIndex   =   2
-         Top             =   147
-         Visible         =   True
-         Width           =   25
-      End
-      Begin Label Label3
-         AutoDeactivate  =   True
-         Bold            =   ""
-         DataField       =   ""
-         DataSource      =   ""
-         Enabled         =   True
-         Height          =   20
-         HelpTag         =   ""
-         Index           =   -2147483648
-         InitialParent   =   "TabPanel1"
-         Italic          =   ""
-         Left            =   126
-         LockBottom      =   ""
-         LockedInPosition=   False
-         LockLeft        =   True
-         LockRight       =   ""
-         LockTop         =   True
-         Multiline       =   ""
-         Scope           =   0
-         Selectable      =   False
-         TabIndex        =   6
-         TabPanelIndex   =   2
-         Text            =   "Background:"
-         TextAlign       =   2
-         TextColor       =   &h000000
-         TextFont        =   "System"
-         TextSize        =   11
-         TextUnit        =   0
-         Top             =   147
-         Transparent     =   False
-         Underline       =   ""
-         Visible         =   True
-         Width           =   69
-      End
-      Begin CheckBox CheckBox1
-         AutoDeactivate  =   True
-         Bold            =   ""
-         Caption         =   "Gridlines"
-         DataField       =   ""
-         DataSource      =   ""
-         Enabled         =   True
-         Height          =   20
-         HelpTag         =   ""
-         Index           =   -2147483648
-         InitialParent   =   "TabPanel1"
-         Italic          =   ""
-         Left            =   266
-         LockBottom      =   ""
-         LockedInPosition=   False
-         LockLeft        =   True
-         LockRight       =   ""
-         LockTop         =   True
-         Scope           =   0
-         State           =   0
-         TabIndex        =   7
-         TabPanelIndex   =   2
-         TabStop         =   True
-         TextFont        =   "System"
-         TextSize        =   11
-         TextUnit        =   0
-         Top             =   147
-         Underline       =   ""
-         Value           =   False
-         Visible         =   True
-         Width           =   100
-      End
-      Begin ColorSelector ColorSelector3
-         AutoDeactivate  =   True
-         BorderColor     =   &h000000
-         BorderWidth     =   1
-         Enabled         =   True
-         FillColor       =   &h00000000
-         Height          =   25
-         HelpTag         =   ""
-         Index           =   -2147483648
-         InitialParent   =   "TabPanel1"
-         Left            =   430
-         LockBottom      =   ""
-         LockedInPosition=   False
-         LockLeft        =   True
-         LockRight       =   ""
-         LockTop         =   True
-         Scope           =   0
-         TabIndex        =   8
-         TabPanelIndex   =   2
-         Top             =   147
-         Visible         =   True
-         Width           =   25
-      End
-      Begin Label Label4
-         AutoDeactivate  =   True
-         Bold            =   ""
-         DataField       =   ""
-         DataSource      =   ""
-         Enabled         =   True
-         Height          =   20
-         HelpTag         =   ""
-         Index           =   -2147483648
-         InitialParent   =   "TabPanel1"
-         Italic          =   ""
-         Left            =   355
-         LockBottom      =   ""
-         LockedInPosition=   False
-         LockLeft        =   True
-         LockRight       =   ""
-         LockTop         =   True
-         Multiline       =   ""
-         Scope           =   0
-         Selectable      =   False
-         TabIndex        =   9
-         TabPanelIndex   =   2
-         Text            =   "Grid Color:"
-         TextAlign       =   2
-         TextColor       =   &h000000
-         TextFont        =   "System"
-         TextSize        =   11
-         TextUnit        =   0
-         Top             =   147
-         Transparent     =   False
-         Underline       =   ""
-         Visible         =   True
-         Width           =   69
-      End
-      Begin RadioButton GOL
-         AutoDeactivate  =   True
-         Bold            =   ""
-         Caption         =   "Game of Life"
-         Enabled         =   True
-         Height          =   20
-         HelpTag         =   ""
-         Index           =   -2147483648
-         InitialParent   =   "TabPanel1"
-         Italic          =   ""
-         Left            =   68
-         LockBottom      =   ""
-         LockedInPosition=   False
-         LockLeft        =   True
-         LockRight       =   ""
-         LockTop         =   True
-         Scope           =   0
-         TabIndex        =   10
-         TabPanelIndex   =   2
-         TabStop         =   True
-         TextFont        =   "System"
-         TextSize        =   11
-         TextUnit        =   0
-         Top             =   216
-         Underline       =   ""
-         Value           =   True
-         Visible         =   True
-         Width           =   100
-      End
-      Begin RadioButton forestfire
-         AutoDeactivate  =   True
-         Bold            =   ""
-         Caption         =   "Forest Fire"
-         Enabled         =   True
-         Height          =   20
-         HelpTag         =   ""
-         Index           =   -2147483648
-         InitialParent   =   "TabPanel1"
-         Italic          =   ""
-         Left            =   68
-         LockBottom      =   ""
-         LockedInPosition=   False
-         LockLeft        =   True
-         LockRight       =   ""
-         LockTop         =   True
-         Scope           =   0
-         TabIndex        =   11
-         TabPanelIndex   =   2
-         TabStop         =   True
-         TextFont        =   "System"
-         TextSize        =   11
-         TextUnit        =   0
-         Top             =   240
-         Underline       =   ""
-         Value           =   ""
-         Visible         =   True
-         Width           =   100
-      End
-      Begin PushButton PushButton1
-         AutoDeactivate  =   True
-         Bold            =   ""
-         ButtonStyle     =   0
-         Cancel          =   ""
-         Caption         =   "Randomize"
-         Default         =   ""
-         Enabled         =   True
-         Height          =   22
-         HelpTag         =   ""
-         Index           =   -2147483648
-         InitialParent   =   "TabPanel1"
-         Italic          =   ""
-         Left            =   321
-         LockBottom      =   ""
-         LockedInPosition=   False
-         LockLeft        =   True
-         LockRight       =   ""
-         LockTop         =   True
-         Scope           =   0
-         TabIndex        =   12
-         TabPanelIndex   =   2
-         TabStop         =   True
-         TextFont        =   "System"
-         TextSize        =   11
-         TextUnit        =   0
-         Top             =   239
-         Underline       =   ""
-         Visible         =   True
-         Width           =   80
-      End
-      Begin Label Label5
-         AutoDeactivate  =   True
-         Bold            =   ""
-         DataField       =   ""
-         DataSource      =   ""
-         Enabled         =   True
-         Height          =   20
-         HelpTag         =   ""
-         Index           =   -2147483648
-         InitialParent   =   "TabPanel1"
-         Italic          =   ""
-         Left            =   12
-         LockBottom      =   ""
-         LockedInPosition=   False
-         LockLeft        =   True
-         LockRight       =   ""
-         LockTop         =   True
-         Multiline       =   ""
-         Scope           =   0
-         Selectable      =   False
-         TabIndex        =   13
-         TabPanelIndex   =   2
-         Text            =   "Speed:"
-         TextAlign       =   2
-         TextColor       =   &h000000
-         TextFont        =   "System"
-         TextSize        =   11
-         TextUnit        =   0
-         Top             =   68
-         Transparent     =   False
-         Underline       =   ""
-         Visible         =   True
-         Width           =   63
-      End
-      Begin Slider Slider2
-         AutoDeactivate  =   True
-         Enabled         =   True
-         Height          =   23
-         HelpTag         =   ""
-         Index           =   -2147483648
-         InitialParent   =   "TabPanel1"
-         Left            =   81
-         LineStep        =   1
-         LiveScroll      =   ""
-         LockBottom      =   ""
-         LockedInPosition=   False
-         LockLeft        =   True
-         LockRight       =   ""
-         LockTop         =   True
-         Maximum         =   1000
-         Minimum         =   50
-         PageStep        =   1
-         Scope           =   0
-         TabIndex        =   14
-         TabPanelIndex   =   2
-         TabStop         =   True
-         TickStyle       =   0
-         Top             =   68
-         Value           =   250
-         Visible         =   True
-         Width           =   218
-      End
-   End
+   Width           =   569
    Begin Timer Timer1
       Height          =   32
       Index           =   -2147483648
@@ -543,91 +36,85 @@ Begin Window Window1
       Top             =   24
       Width           =   32
    End
-   Begin BevelButton playpause
+   Begin PlacardButton playpause
       AcceptFocus     =   True
+      AcceptTabs      =   ""
       AutoDeactivate  =   True
-      BackColor       =   ""
-      Bevel           =   1
-      Bold            =   ""
-      ButtonType      =   0
-      Caption         =   ""
-      CaptionAlign    =   ""
-      CaptionDelta    =   ""
-      CaptionPlacement=   ""
+      Backdrop        =   ""
+      bold            =   ""
+      caption         =   ""
+      DoubleBuffer    =   False
       Enabled         =   True
-      HasBackColor    =   ""
-      HasMenu         =   ""
+      EraseBackground =   True
+      hasIcon         =   ""
       Height          =   28
       HelpTag         =   ""
       Icon            =   719679487
-      IconAlign       =   1
-      IconDX          =   ""
-      IconDY          =   ""
+      iconDX          =   0
+      iconDY          =   0
       Index           =   -2147483648
       InitialParent   =   ""
-      Italic          =   ""
+      invertTextColor =   ""
+      isSticky        =   True
+      italic          =   ""
       Left            =   245
       LockBottom      =   True
       LockedInPosition=   False
       LockLeft        =   True
       LockRight       =   ""
       LockTop         =   False
-      MenuValue       =   ""
       Scope           =   0
       TabIndex        =   1
       TabPanelIndex   =   0
       TabStop         =   True
-      TextColor       =   ""
-      TextFont        =   "System"
-      TextSize        =   0
-      TextUnit        =   0
+      textColor       =   0
+      textFont        =   "System"
+      textSize        =   0
       Top             =   624
-      Underline       =   ""
-      Value           =   ""
+      underline       =   ""
+      UseFocusRing    =   True
+      value           =   ""
       Visible         =   True
       Width           =   42
    End
-   Begin BevelButton Reseter
+   Begin PlacardButton Reseter
       AcceptFocus     =   ""
+      AcceptTabs      =   ""
       AutoDeactivate  =   True
-      BackColor       =   ""
-      Bevel           =   1
-      Bold            =   ""
-      ButtonType      =   ""
-      Caption         =   ""
-      CaptionAlign    =   ""
-      CaptionDelta    =   ""
-      CaptionPlacement=   ""
+      Backdrop        =   ""
+      bold            =   ""
+      caption         =   ""
+      DoubleBuffer    =   False
       Enabled         =   True
-      HasBackColor    =   ""
-      HasMenu         =   ""
+      EraseBackground =   True
+      hasIcon         =   ""
       Height          =   28
       HelpTag         =   ""
       Icon            =   644884479
-      IconAlign       =   ""
-      IconDX          =   ""
-      IconDY          =   ""
+      iconDX          =   0
+      iconDY          =   0
       Index           =   -2147483648
       InitialParent   =   ""
-      Italic          =   ""
+      invertTextColor =   ""
+      isSticky        =   0
+      italic          =   ""
       Left            =   299
       LockBottom      =   True
       LockedInPosition=   False
       LockLeft        =   False
       LockRight       =   True
       LockTop         =   False
-      MenuValue       =   ""
       Scope           =   0
       TabIndex        =   2
       TabPanelIndex   =   0
       TabStop         =   True
-      TextColor       =   ""
-      TextFont        =   "System"
-      TextSize        =   0
-      TextUnit        =   0
+      textColor       =   0
+      textFont        =   "System"
+      textSize        =   0
       Top             =   624
-      Underline       =   ""
-      Value           =   ""
+      underline       =   ""
+      UseFocusRing    =   True
+      value           =   ""
       Visible         =   True
       Width           =   30
    End
@@ -698,6 +185,89 @@ Begin Window Window1
       Underline       =   ""
       Visible         =   True
       Width           =   175
+   End
+   Begin Slider Slider1
+      AutoDeactivate  =   True
+      Enabled         =   True
+      Height          =   23
+      HelpTag         =   ""
+      Index           =   -2147483648
+      InitialParent   =   ""
+      Left            =   780
+      LineStep        =   1
+      LiveScroll      =   ""
+      LockBottom      =   ""
+      LockedInPosition=   False
+      LockLeft        =   True
+      LockRight       =   ""
+      LockTop         =   True
+      Maximum         =   25
+      Minimum         =   5
+      PageStep        =   1
+      Scope           =   0
+      TabIndex        =   6
+      TabPanelIndex   =   0
+      TabStop         =   True
+      TickStyle       =   0
+      Top             =   286
+      Value           =   10
+      Visible         =   False
+      Width           =   218
+   End
+   Begin Slider Slider2
+      AutoDeactivate  =   True
+      Enabled         =   True
+      Height          =   23
+      HelpTag         =   ""
+      Index           =   -2147483648
+      InitialParent   =   ""
+      Left            =   795
+      LineStep        =   1
+      LiveScroll      =   ""
+      LockBottom      =   ""
+      LockedInPosition=   False
+      LockLeft        =   True
+      LockRight       =   ""
+      LockTop         =   True
+      Maximum         =   1000
+      Minimum         =   50
+      PageStep        =   1
+      Scope           =   0
+      TabIndex        =   7
+      TabPanelIndex   =   0
+      TabStop         =   True
+      TickStyle       =   0
+      Top             =   204
+      Value           =   250
+      Visible         =   False
+      Width           =   218
+   End
+   Begin Canvas Canvas1
+      AcceptFocus     =   ""
+      AcceptTabs      =   ""
+      AutoDeactivate  =   True
+      Backdrop        =   ""
+      DoubleBuffer    =   False
+      Enabled         =   True
+      EraseBackground =   True
+      Height          =   612
+      HelpTag         =   ""
+      Index           =   -2147483648
+      InitialParent   =   ""
+      Left            =   0
+      LockBottom      =   True
+      LockedInPosition=   False
+      LockLeft        =   True
+      LockRight       =   True
+      LockTop         =   True
+      Scope           =   0
+      TabIndex        =   8
+      TabPanelIndex   =   0
+      TabStop         =   True
+      Top             =   0
+      UseFocusRing    =   True
+      Visible         =   True
+      Width           =   569
    End
 End
 #tag EndWindow
@@ -850,6 +420,16 @@ End
 		  ReDim WorldArray(-1, -1)
 		  ReDim WorldArray(World.Width \ CellSize, World.Height \ CellSize)
 		  GenCount = 0
+		  Dim rand As New Random
+		  For X As Integer = 0 To UBound(WorldArray, 1)
+		    For Y As Integer = 0 To UBound(WorldArray, 2)
+		      If Rand.InRange(2, 10) = 8 Then
+		        WorldArray(X, Y) = alive
+		      Else
+		        WorldArray(X, Y) = dead
+		      End If
+		    Next
+		  Next
 		End Sub
 	#tag EndMethod
 
@@ -859,7 +439,7 @@ End
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
-		DeadColor As Color = &cC0C0C000
+		DeadColor As Color = &c80808000
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
@@ -875,11 +455,11 @@ End
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
-		GridColor As Color = &c00000000
+		GridColor As Color = &c0000A000
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
-		LifeColor As Color = &c00FF0000
+		LifeColor As Color = &c0000FF00
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
@@ -887,7 +467,7 @@ End
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
-		ShowGrid As Boolean
+		ShowGrid As Boolean = True
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
@@ -915,112 +495,6 @@ End
 
 #tag EndWindowCode
 
-#tag Events Canvas1
-	#tag Event
-		Sub Paint(g As Graphics)
-		  g.DrawPicture(World, 0, 0)
-		End Sub
-	#tag EndEvent
-	#tag Event
-		Sub Open()
-		  Reset()
-		End Sub
-	#tag EndEvent
-	#tag Event
-		Function MouseDown(X As Integer, Y As Integer) As Boolean
-		  Dim cellX, cellY As Integer
-		  
-		  cellX = X \ CellSize
-		  cellY = Y \ CellSize
-		  
-		  If WorldArray(cellX, cellY) = dead Then
-		    WorldArray(cellX, cellY) = alive
-		  Else
-		    WorldArray(cellX, cellY) = dead
-		  End If
-		  
-		  Repaint()
-		  Me.Refresh(False)
-		End Function
-	#tag EndEvent
-#tag EndEvents
-#tag Events Slider1
-	#tag Event
-		Sub ValueChanged()
-		  CellSize = Me.Value
-		  Reset()
-		  Repaint()
-		  Canvas1.Refresh(False)
-		End Sub
-	#tag EndEvent
-#tag EndEvents
-#tag Events ColorSelector1
-	#tag Event
-		Sub ColorSelected(c As Color)
-		  LifeColor = c
-		End Sub
-	#tag EndEvent
-#tag EndEvents
-#tag Events ColorSelector2
-	#tag Event
-		Sub ColorSelected(c As Color)
-		  DeadColor = c
-		End Sub
-	#tag EndEvent
-#tag EndEvents
-#tag Events CheckBox1
-	#tag Event
-		Sub Action()
-		  ShowGrid = Me.Value
-		  
-		End Sub
-	#tag EndEvent
-#tag EndEvents
-#tag Events ColorSelector3
-	#tag Event
-		Sub ColorSelected(c As Color)
-		  GridColor = c
-		End Sub
-	#tag EndEvent
-#tag EndEvents
-#tag Events GOL
-	#tag Event
-		Sub Action()
-		  GameStyle = 0
-		  
-		End Sub
-	#tag EndEvent
-#tag EndEvents
-#tag Events forestfire
-	#tag Event
-		Sub Action()
-		  GameStyle = 1
-		End Sub
-	#tag EndEvent
-#tag EndEvents
-#tag Events PushButton1
-	#tag Event
-		Sub Action()
-		  Dim rand As New Random
-		  For X As Integer = 0 To UBound(WorldArray, 1)
-		    For Y As Integer = 0 To UBound(WorldArray, 2)
-		      If Rand.InRange(2, 10) = 8 Then
-		        WorldArray(X, Y) = alive
-		      Else
-		        WorldArray(X, Y) = dead
-		      End If
-		    Next
-		  Next
-		End Sub
-	#tag EndEvent
-#tag EndEvents
-#tag Events Slider2
-	#tag Event
-		Sub ValueChanged()
-		  Timer1.Period = Me.Value
-		End Sub
-	#tag EndEvent
-#tag EndEvents
 #tag Events Timer1
 	#tag Event
 		Sub Action()
@@ -1084,5 +558,51 @@ End
 		  Repaint()
 		  Canvas1.Refresh(False)
 		End Sub
+	#tag EndEvent
+#tag EndEvents
+#tag Events Slider1
+	#tag Event
+		Sub ValueChanged()
+		  CellSize = Me.Value
+		  Reset()
+		  Repaint()
+		  Canvas1.Refresh(False)
+		End Sub
+	#tag EndEvent
+#tag EndEvents
+#tag Events Slider2
+	#tag Event
+		Sub ValueChanged()
+		  Timer1.Period = Me.Value
+		End Sub
+	#tag EndEvent
+#tag EndEvents
+#tag Events Canvas1
+	#tag Event
+		Sub Paint(g As Graphics)
+		  g.DrawPicture(World, 0, 0)
+		End Sub
+	#tag EndEvent
+	#tag Event
+		Sub Open()
+		  Reset()
+		End Sub
+	#tag EndEvent
+	#tag Event
+		Function MouseDown(X As Integer, Y As Integer) As Boolean
+		  Dim cellX, cellY As Integer
+		  
+		  cellX = X \ CellSize
+		  cellY = Y \ CellSize
+		  
+		  If WorldArray(cellX, cellY) = dead Then
+		    WorldArray(cellX, cellY) = alive
+		  Else
+		    WorldArray(cellX, cellY) = dead
+		  End If
+		  
+		  Repaint()
+		  Me.Refresh(False)
+		End Function
 	#tag EndEvent
 #tag EndEvents
