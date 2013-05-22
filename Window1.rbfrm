@@ -30,7 +30,7 @@ Begin Window Window1
       Left            =   601
       LockedInPosition=   False
       Mode            =   0
-      Period          =   250
+      Period          =   1
       Scope           =   0
       TabPanelIndex   =   0
       Top             =   24
@@ -386,8 +386,8 @@ End
 
 	#tag Method, Flags = &h0
 		Sub Repaint()
-		  For X As Integer = 0 To UBound(WorldArray, 1)
-		    For Y As Integer = 0 To UBound(WorldArray, 2)
+		  For Y As Integer = 0 To UBound(WorldArray, 2)
+		    For X As Integer = 0 To UBound(WorldArray, 1)
 		      Select Case WorldArray(X, Y)
 		      Case alive
 		        World.Graphics.ForeColor = LifeColor
@@ -403,11 +403,12 @@ End
 		  
 		  If ShowGrid Then
 		    world.Graphics.ForeColor = GridColor
-		    For X As Integer = 0 To Canvas1.Width Step CellSize
+		    Dim c As Integer = Max(Canvas1.Width, Canvas1.Height)
+		    For X As Integer = 0 To c Step CellSize
 		      world.Graphics.DrawLine(X, 0, X, Canvas1.Height)
 		    Next
 		    
-		    For Y As Integer = 0 To Canvas1.Width Step CellSize
+		    For Y As Integer = 0 To c Step CellSize
 		      world.Graphics.DrawLine(0, Y, Canvas1.Width, Y)
 		    Next
 		  End If
