@@ -24,18 +24,6 @@ Begin Window Window1
    Title           =   "Game Of Life"
    Visible         =   True
    Width           =   569
-   Begin Timer Timer1
-      Height          =   32
-      Index           =   -2147483648
-      Left            =   601
-      LockedInPosition=   False
-      Mode            =   0
-      Period          =   1
-      Scope           =   0
-      TabPanelIndex   =   0
-      Top             =   24
-      Width           =   32
-   End
    Begin PlacardButton playpause
       AcceptFocus     =   True
       AcceptTabs      =   ""
@@ -193,14 +181,14 @@ Begin Window Window1
       HelpTag         =   ""
       Index           =   -2147483648
       InitialParent   =   ""
-      Left            =   780
+      Left            =   778
       LineStep        =   1
       LiveScroll      =   ""
-      LockBottom      =   ""
+      LockBottom      =   True
       LockedInPosition=   False
       LockLeft        =   True
       LockRight       =   ""
-      LockTop         =   True
+      LockTop         =   False
       Maximum         =   25
       Minimum         =   5
       PageStep        =   1
@@ -209,36 +197,8 @@ Begin Window Window1
       TabPanelIndex   =   0
       TabStop         =   True
       TickStyle       =   0
-      Top             =   286
+      Top             =   -6
       Value           =   10
-      Visible         =   False
-      Width           =   218
-   End
-   Begin Slider Slider2
-      AutoDeactivate  =   True
-      Enabled         =   True
-      Height          =   23
-      HelpTag         =   ""
-      Index           =   -2147483648
-      InitialParent   =   ""
-      Left            =   795
-      LineStep        =   1
-      LiveScroll      =   ""
-      LockBottom      =   ""
-      LockedInPosition=   False
-      LockLeft        =   True
-      LockRight       =   ""
-      LockTop         =   True
-      Maximum         =   1000
-      Minimum         =   50
-      PageStep        =   1
-      Scope           =   0
-      TabIndex        =   7
-      TabPanelIndex   =   0
-      TabStop         =   True
-      TickStyle       =   0
-      Top             =   204
-      Value           =   250
       Visible         =   False
       Width           =   218
    End
@@ -269,10 +229,30 @@ Begin Window Window1
       Visible         =   True
       Width           =   569
    End
+   Begin Timer Timer1
+      Height          =   32
+      Index           =   -2147483648
+      Left            =   637
+      LockedInPosition=   False
+      Mode            =   2
+      Period          =   1000
+      Scope           =   0
+      TabPanelIndex   =   0
+      Top             =   29
+      Width           =   32
+   End
 End
 #tag EndWindow
 
 #tag WindowCode
+	#tag Event
+		Sub Open()
+		  RenderLock = New Semaphore
+		  RenderThread = New Thread
+		  AddHandler RenderThread.Run, WeakAddressOf ThreadRun
+		End Sub
+	#tag EndEvent
+
 	#tag Event
 		Sub Resized()
 		  Reset()
@@ -281,42 +261,10 @@ End
 
 
 	#tag MenuHandler
-		Function FasterItem() As Boolean Handles FasterItem.Action
-			If Timer1.Period > 50 Then
-			Timer1.Period = Timer1.Period - 10
-			End If
-			Return True
-			
-		End Function
-	#tag EndMenuHandler
-
-	#tag MenuHandler
 		Function ResetItem() As Boolean Handles ResetItem.Action
 			Reset()
 			Repaint()
 			Canvas1.Refresh(False)
-			Return True
-			
-		End Function
-	#tag EndMenuHandler
-
-	#tag MenuHandler
-		Function SlowerItem() As Boolean Handles SlowerItem.Action
-			If Timer1.Period < 5000 Then
-			Timer1.Period = Timer1.Period + 10
-			End If
-			Return True
-			
-		End Function
-	#tag EndMenuHandler
-
-	#tag MenuHandler
-		Function StopItem() As Boolean Handles StopItem.Action
-			If Timer1.Mode = Timer.ModeOff Then
-			Timer1.Mode = Timer.ModeMultiple
-			Else
-			Timer1.Mode = Timer.ModeOff
-			End If
 			Return True
 			
 		End Function
@@ -384,34 +332,37 @@ End
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h0
-		Sub Repaint()
-		  For Y As Integer = 0 To UBound(WorldArray, 2)
-		    For X As Integer = 0 To UBound(WorldArray, 1)
+	#tag Method, Flags = &h21
+		Private Sub Repaint()
+		  LastWorld = World
+		  Dim wg As Graphics = World.Graphics
+		  For X As Integer = 0 To UBound(WorldArray, 1)
+		    For Y As Integer = 0 To UBound(WorldArray, 2)
 		      Select Case WorldArray(X, Y)
 		      Case alive
-		        World.Graphics.ForeColor = LifeColor
+		        wg.ForeColor = LifeColor
 		      Case dead
-		        World.Graphics.ForeColor = DeadColor
+		        wg.ForeColor = DeadColor
 		      Case fire
-		        World.Graphics.ForeColor = &cFF000000
+		        wg.ForeColor = &cFF000000
 		      End Select
-		      World.Graphics.FillRect(X * CellSize, Y * CellSize, CellSize, CellSize)
+		      wg.FillRect(X * CellSize, Y * CellSize, CellSize, CellSize)
 		      
 		    Next
 		  Next
 		  
 		  If ShowGrid Then
-		    world.Graphics.ForeColor = GridColor
+		    wg.ForeColor = GridColor
 		    Dim c As Integer = Max(Canvas1.Width, Canvas1.Height)
 		    For X As Integer = 0 To c Step CellSize
-		      world.Graphics.DrawLine(X, 0, X, Canvas1.Height)
+		      wg.DrawLine(X, 0, X, Canvas1.Height)
 		    Next
 		    
 		    For Y As Integer = 0 To c Step CellSize
-		      world.Graphics.DrawLine(0, Y, Canvas1.Width, Y)
+		      wg.DrawLine(0, Y, Canvas1.Width, Y)
 		    Next
 		  End If
+		  
 		End Sub
 	#tag EndMethod
 
@@ -434,9 +385,64 @@ End
 		End Sub
 	#tag EndMethod
 
+	#tag Method, Flags = &h21
+		Private Sub ThreadRun(Sender As Thread)
+		  Do
+		    While Not RenderLock.TrySignal
+		      App.YieldToNextThread
+		    Wend
+		    If Pause Then
+		      RenderLock.Release
+		      Continue
+		    End If
+		    
+		    Dim lifecount As UInt64
+		    Dim newworld(-1, -1) As Integer
+		    ReDim newworld(UBound(WorldArray, 1), UBound(WorldArray, 2))
+		    GenCount = GenCount + 1
+		    Dim stable As Boolean = True
+		    
+		    For X As Integer = 1 To UBound(WorldArray, 1) - 1
+		      For Y As Integer = 1 To UBound(WorldArray, 2) - 1
+		        If GameStyle = 0 Then 'life
+		          newworld(X, Y) = Life(X, Y)
+		        Else
+		          newworld(X, Y) = Fire(X, Y)
+		        End If
+		        If newworld(X, Y) = alive Then
+		          lifecount = lifecount + 1
+		        End If
+		        
+		        If newworld(X, Y) <> WorldArray(X, Y) Then
+		          stable = False
+		        End If
+		      Next
+		    Next
+		    
+		    WorldArray = newworld
+		    Repaint()
+		    Canvas1.Refresh(False)
+		    
+		    Generations.Text = Format(GenCount, "###,###,###,###,###,###,##0") + " generations"
+		    LifeForms.Text = Format(LifeCount, "###,###,###,###,###,###,##0") + " life forms"
+		    
+		    If lifecount = 0 Then
+		      MsgBox("Extinction occurred after " + Format(GenCount, "###,###,###,###,###,###,##0") + " generations.")
+		      Exit Do
+		    ElseIf stable Then
+		      MsgBox("Biostasis achieved after " + Format(GenCount, "###,###,###,###,###,###,##0") + " generations.")
+		      Exit Do
+		    End If
+		    RenderLock.Release
+		    App.YieldToNextThread
+		  Loop
+		  RenderLock.Release
+		End Sub
+	#tag EndMethod
+
 
 	#tag Property, Flags = &h0
-		CellSize As Integer = 10
+		CellSize As Integer = 5
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
@@ -459,12 +465,28 @@ End
 		GridColor As Color = &c0000A000
 	#tag EndProperty
 
+	#tag Property, Flags = &h21
+		Private LastWorld As Picture
+	#tag EndProperty
+
 	#tag Property, Flags = &h0
 		LifeColor As Color = &c0000FF00
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
 		LifeProbability As Integer = 15
+	#tag EndProperty
+
+	#tag Property, Flags = &h0
+		Pause As Boolean = True
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private RenderLock As Semaphore
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private RenderThread As Thread
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
@@ -496,59 +518,11 @@ End
 
 #tag EndWindowCode
 
-#tag Events Timer1
-	#tag Event
-		Sub Action()
-		  Dim lifecount As UInt64
-		  Dim newworld(-1, -1) As Integer
-		  ReDim newworld(UBound(WorldArray, 1), UBound(WorldArray, 2))
-		  GenCount = GenCount + 1
-		  Dim stable As Boolean = True
-		  
-		  For X As Integer = 1 To UBound(WorldArray, 1) - 1
-		    For Y As Integer = 1 To UBound(WorldArray, 2) - 1
-		      If GameStyle = 0 Then 'life
-		        newworld(X, Y) = Life(X, Y)
-		      Else
-		        newworld(X, Y) = Fire(X, Y)
-		      End If
-		      If newworld(X, Y) = alive Then
-		        lifecount = lifecount + 1
-		      End If
-		      
-		      If newworld(X, Y) <> WorldArray(X, Y) Then
-		        stable = False
-		      End If
-		    Next
-		  Next
-		  
-		  WorldArray = newworld
-		  
-		  World = New Picture(World.Width, World.Height, 32)
-		  Repaint()
-		  Canvas1.Refresh(False)
-		  
-		  Generations.Text = Format(GenCount, "###,###,###,###,###,###,##0") + " generations"
-		  LifeForms.Text = Format(LifeCount, "###,###,###,###,###,###,##0") + " life forms"
-		  
-		  If lifecount = 0 Then
-		    Me.Mode = Timer.ModeOff
-		    MsgBox("Extinction occurred after " + Format(GenCount, "###,###,###,###,###,###,##0") + " generations.")
-		  ElseIf stable Then
-		    Me.Mode = Timer.ModeOff
-		    MsgBox("Biostasis achieved after " + Format(GenCount, "###,###,###,###,###,###,##0") + " generations.")
-		  End If
-		End Sub
-	#tag EndEvent
-#tag EndEvents
 #tag Events playpause
 	#tag Event
 		Sub Action()
-		  If Timer1.Mode = Timer.ModeOff Then
-		    Timer1.Mode = Timer.ModeMultiple
-		  Else
-		    Timer1.Mode = Timer.ModeOff
-		  End If
+		  Pause = Not Pause
+		  If RenderThread.State <> Thread.Running Then RenderThread.Run
 		End Sub
 	#tag EndEvent
 #tag EndEvents
@@ -571,17 +545,15 @@ End
 		End Sub
 	#tag EndEvent
 #tag EndEvents
-#tag Events Slider2
-	#tag Event
-		Sub ValueChanged()
-		  Timer1.Period = Me.Value
-		End Sub
-	#tag EndEvent
-#tag EndEvents
 #tag Events Canvas1
 	#tag Event
 		Sub Paint(g As Graphics)
-		  g.DrawPicture(World, 0, 0)
+		  If Not RenderLock.TrySignal Then
+		    g.DrawPicture(LastWorld, 0, 0)
+		  Else
+		    g.DrawPicture(World, 0, 0)
+		    RenderLock.Release
+		  End If
 		End Sub
 	#tag EndEvent
 	#tag Event
@@ -605,5 +577,12 @@ End
 		  Repaint()
 		  Me.Refresh(False)
 		End Function
+	#tag EndEvent
+#tag EndEvents
+#tag Events Timer1
+	#tag Event
+		Sub Action()
+		  'Canvas1.Invalidate
+		End Sub
 	#tag EndEvent
 #tag EndEvents
