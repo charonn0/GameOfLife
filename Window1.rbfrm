@@ -45,7 +45,7 @@ Begin Window Window1
       invertTextColor =   ""
       isSticky        =   True
       italic          =   ""
-      Left            =   245
+      Left            =   20
       LockBottom      =   True
       LockedInPosition=   False
       LockLeft        =   True
@@ -58,7 +58,7 @@ Begin Window Window1
       textColor       =   0
       textFont        =   "System"
       textSize        =   0
-      Top             =   624
+      Top             =   619
       underline       =   ""
       UseFocusRing    =   True
       value           =   ""
@@ -86,11 +86,11 @@ Begin Window Window1
       invertTextColor =   ""
       isSticky        =   0
       italic          =   ""
-      Left            =   299
+      Left            =   74
       LockBottom      =   True
       LockedInPosition=   False
-      LockLeft        =   False
-      LockRight       =   True
+      LockLeft        =   True
+      LockRight       =   False
       LockTop         =   False
       Scope           =   0
       TabIndex        =   2
@@ -99,46 +99,12 @@ Begin Window Window1
       textColor       =   0
       textFont        =   "System"
       textSize        =   0
-      Top             =   624
+      Top             =   619
       underline       =   ""
       UseFocusRing    =   True
       value           =   ""
       Visible         =   True
       Width           =   30
-   End
-   Begin Label Generations
-      AutoDeactivate  =   True
-      Bold            =   ""
-      DataField       =   ""
-      DataSource      =   ""
-      Enabled         =   True
-      Height          =   20
-      HelpTag         =   ""
-      Index           =   -2147483648
-      InitialParent   =   ""
-      Italic          =   ""
-      Left            =   0
-      LockBottom      =   True
-      LockedInPosition=   False
-      LockLeft        =   True
-      LockRight       =   False
-      LockTop         =   False
-      Multiline       =   ""
-      Scope           =   0
-      Selectable      =   False
-      TabIndex        =   3
-      TabPanelIndex   =   0
-      Text            =   ""
-      TextAlign       =   0
-      TextColor       =   0
-      TextFont        =   "System"
-      TextSize        =   0
-      TextUnit        =   0
-      Top             =   634
-      Transparent     =   False
-      Underline       =   ""
-      Visible         =   True
-      Width           =   175
    End
    Begin Label LifeForms
       AutoDeactivate  =   True
@@ -181,7 +147,7 @@ Begin Window Window1
       HelpTag         =   ""
       Index           =   -2147483648
       InitialParent   =   ""
-      Left            =   778
+      Left            =   116
       LineStep        =   1
       LiveScroll      =   ""
       LockBottom      =   True
@@ -190,17 +156,17 @@ Begin Window Window1
       LockRight       =   ""
       LockTop         =   False
       Maximum         =   25
-      Minimum         =   5
+      Minimum         =   1
       PageStep        =   1
       Scope           =   0
       TabIndex        =   6
       TabPanelIndex   =   0
       TabStop         =   True
       TickStyle       =   0
-      Top             =   -6
-      Value           =   10
-      Visible         =   False
-      Width           =   218
+      Top             =   619
+      Value           =   5
+      Visible         =   True
+      Width           =   105
    End
    Begin Canvas Canvas1
       AcceptFocus     =   ""
@@ -209,7 +175,7 @@ Begin Window Window1
       Backdrop        =   ""
       DoubleBuffer    =   False
       Enabled         =   True
-      EraseBackground =   True
+      EraseBackground =   False
       Height          =   612
       HelpTag         =   ""
       Index           =   -2147483648
@@ -229,22 +195,89 @@ Begin Window Window1
       Visible         =   True
       Width           =   569
    End
+   Begin Slider Slider2
+      AutoDeactivate  =   True
+      Enabled         =   True
+      Height          =   23
+      HelpTag         =   ""
+      Index           =   -2147483648
+      InitialParent   =   ""
+      Left            =   242
+      LineStep        =   1
+      LiveScroll      =   ""
+      LockBottom      =   True
+      LockedInPosition=   False
+      LockLeft        =   True
+      LockRight       =   ""
+      LockTop         =   False
+      Maximum         =   1000
+      Minimum         =   10
+      PageStep        =   20
+      Scope           =   0
+      TabIndex        =   9
+      TabPanelIndex   =   0
+      TabStop         =   True
+      TickStyle       =   0
+      Top             =   619
+      Value           =   0
+      Visible         =   True
+      Width           =   105
+   End
    Begin Timer Timer1
       Height          =   32
       Index           =   -2147483648
-      Left            =   637
+      InitialParent   =   ""
+      Left            =   653
       LockedInPosition=   False
       Mode            =   2
-      Period          =   1000
+      Period          =   500
       Scope           =   0
       TabPanelIndex   =   0
-      Top             =   29
+      Top             =   0
       Width           =   32
+   End
+   Begin CheckBox ShowGrid
+      AutoDeactivate  =   True
+      Bold            =   ""
+      Caption         =   "Show grid"
+      DataField       =   ""
+      DataSource      =   ""
+      Enabled         =   True
+      Height          =   20
+      HelpTag         =   ""
+      Index           =   -2147483648
+      InitialParent   =   ""
+      Italic          =   ""
+      Left            =   359
+      LockBottom      =   True
+      LockedInPosition=   False
+      LockLeft        =   True
+      LockRight       =   ""
+      LockTop         =   False
+      Scope           =   0
+      State           =   1
+      TabIndex        =   10
+      TabPanelIndex   =   0
+      TabStop         =   True
+      TextFont        =   "System"
+      TextSize        =   0
+      TextUnit        =   0
+      Top             =   619
+      Underline       =   ""
+      Value           =   True
+      Visible         =   True
+      Width           =   100
    End
 End
 #tag EndWindow
 
 #tag WindowCode
+	#tag Event
+		Function CancelClose(appQuitting as Boolean) As Boolean
+		  If RenderThread.State = Thread.Running Then RenderThread.Kill
+		End Function
+	#tag EndEvent
+
 	#tag Event
 		Sub Open()
 		  RenderLock = New Semaphore
@@ -336,13 +369,16 @@ End
 		Private Sub Repaint()
 		  LastWorld = World
 		  Dim wg As Graphics = World.Graphics
+		  wg.ForeColor = DeadColor
+		  wg.FillRect(0, 0, wg.Width, wg.Height)
 		  For X As Integer = 0 To UBound(WorldArray, 1)
 		    For Y As Integer = 0 To UBound(WorldArray, 2)
 		      Select Case WorldArray(X, Y)
 		      Case alive
 		        wg.ForeColor = LifeColor
 		      Case dead
-		        wg.ForeColor = DeadColor
+		        'wg.ForeColor = DeadColor
+		        Continue
 		      Case fire
 		        wg.ForeColor = &cFF000000
 		      End Select
@@ -351,7 +387,7 @@ End
 		    Next
 		  Next
 		  
-		  If ShowGrid Then
+		  If ShowGrid.Value Then
 		    wg.ForeColor = GridColor
 		    Dim c As Integer = Max(Canvas1.Width, Canvas1.Height)
 		    For X As Integer = 0 To c Step CellSize
@@ -396,35 +432,39 @@ End
 		      Continue
 		    End If
 		    
-		    Dim lifecount As UInt64
+		    LifeCount = 0
 		    Dim newworld(-1, -1) As Integer
 		    ReDim newworld(UBound(WorldArray, 1), UBound(WorldArray, 2))
 		    GenCount = GenCount + 1
 		    Dim stable As Boolean = True
 		    
-		    For X As Integer = 1 To UBound(WorldArray, 1) - 1
-		      For Y As Integer = 1 To UBound(WorldArray, 2) - 1
-		        If GameStyle = 0 Then 'life
-		          newworld(X, Y) = Life(X, Y)
-		        Else
-		          newworld(X, Y) = Fire(X, Y)
-		        End If
-		        If newworld(X, Y) = alive Then
-		          lifecount = lifecount + 1
-		        End If
-		        
-		        If newworld(X, Y) <> WorldArray(X, Y) Then
-		          stable = False
-		        End If
+		    Try
+		      For X As Integer = 1 To UBound(WorldArray, 1) - 1
+		        For Y As Integer = 1 To UBound(WorldArray, 2) - 1
+		          If GameStyle = 0 Then 'life
+		            newworld(X, Y) = Life(X, Y)
+		          Else
+		            newworld(X, Y) = Fire(X, Y)
+		          End If
+		          If newworld(X, Y) = alive Then
+		            lifecount = lifecount + 1
+		          End If
+		          
+		          If newworld(X, Y) <> WorldArray(X, Y) Then
+		            stable = False
+		          End If
+		        Next
 		      Next
-		    Next
+		    Catch Err As OutOfBoundsException ' resized!
+		      RenderLock.Release
+		      Continue
+		    End Try
 		    
 		    WorldArray = newworld
 		    Repaint()
-		    Canvas1.Refresh(False)
+		    'Canvas1.Refresh(False)
+		    Canvas1.Refresh(True)
 		    
-		    Generations.Text = Format(GenCount, "###,###,###,###,###,###,##0") + " generations"
-		    LifeForms.Text = Format(LifeCount, "###,###,###,###,###,###,##0") + " life forms"
 		    
 		    If lifecount = 0 Then
 		      MsgBox("Extinction occurred after " + Format(GenCount, "###,###,###,###,###,###,##0") + " generations.")
@@ -433,8 +473,8 @@ End
 		      MsgBox("Biostasis achieved after " + Format(GenCount, "###,###,###,###,###,###,##0") + " generations.")
 		      Exit Do
 		    End If
+		    Sender.Sleep(Slider2.Value)
 		    RenderLock.Release
-		    App.YieldToNextThread
 		  Loop
 		  RenderLock.Release
 		End Sub
@@ -473,6 +513,10 @@ End
 		LifeColor As Color = &c0000FF00
 	#tag EndProperty
 
+	#tag Property, Flags = &h21
+		Private LifeCount As UInt64
+	#tag EndProperty
+
 	#tag Property, Flags = &h0
 		LifeProbability As Integer = 15
 	#tag EndProperty
@@ -487,10 +531,6 @@ End
 
 	#tag Property, Flags = &h21
 		Private RenderThread As Thread
-	#tag EndProperty
-
-	#tag Property, Flags = &h0
-		ShowGrid As Boolean = True
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
@@ -522,7 +562,7 @@ End
 	#tag Event
 		Sub Action()
 		  Pause = Not Pause
-		  If RenderThread.State <> Thread.Running Then RenderThread.Run
+		  If RenderThread.State <> Thread.Running And RenderThread.State <> Thread.Sleeping Then RenderThread.Run
 		End Sub
 	#tag EndEvent
 #tag EndEvents
@@ -582,7 +622,11 @@ End
 #tag Events Timer1
 	#tag Event
 		Sub Action()
-		  'Canvas1.Invalidate
+		  If Not RenderLock.TrySignal Then
+		    Self.Title = "Game of life - " + Format(GenCount, "###,###,###,###,###,###,##0") + " generations; " + Format(LifeCount, "###,###,###,###,###,###,##0") + " life forms"
+		  Else
+		    RenderLock.Release
+		  End If
 		End Sub
 	#tag EndEvent
 #tag EndEvents
