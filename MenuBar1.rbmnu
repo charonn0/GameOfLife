@@ -64,6 +64,12 @@ Begin Menu MenuBar1
          MenuModifier = True
          AutoEnable = True
       End
+      Begin MenuItem SetColor
+         SpecialMenu = 0
+         Text = "Set color..."
+         Index = -2147483648
+         AutoEnable = True
+      End
    End
 End
 #tag EndMenu

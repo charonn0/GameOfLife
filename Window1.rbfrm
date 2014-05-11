@@ -245,7 +245,7 @@ End
 	#tag MenuHandler
 		Function ClearWorld() As Boolean Handles ClearWorld.Action
 			If AcquireRenderLock() Then
-			Reset(False)
+			Reset(False, True)
 			Repaint()
 			Canvas1.Invalidate
 			RenderLock.Release
@@ -322,6 +322,20 @@ End
 			Call SaveWorld(bs)
 			bs.Close
 			End If
+			Return True
+			
+		End Function
+	#tag EndMenuHandler
+
+	#tag MenuHandler
+		Function SetColor() As Boolean Handles SetColor.Action
+			Dim c As Color = LifeColor
+			If SelectColor(c, "Choose life's color") Then LifeColor = c
+			If AcquireRenderLock() Then
+			Repaint()
+			RenderLock.Release
+			End If
+			Canvas1.Invalidate(True)
 			Return True
 			
 		End Function
@@ -663,6 +677,17 @@ End
 		    bs.Close
 		    App.LoadFile = Nil
 		  End If
+		End Sub
+	#tag EndEvent
+#tag EndEvents
+#tag Events ShowGrid
+	#tag Event
+		Sub Action()
+		  If AcquireRenderLock() Then
+		    Repaint()
+		    RenderLock.Release
+		  End If
+		  Canvas1.Invalidate(True)
 		End Sub
 	#tag EndEvent
 #tag EndEvents
