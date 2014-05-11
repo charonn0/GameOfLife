@@ -7,14 +7,14 @@ Begin Window Window1
    Frame           =   0
    FullScreen      =   False
    HasBackColor    =   False
-   Height          =   654
+   Height          =   6.24e+2
    ImplicitInstance=   True
    LiveResize      =   True
    MacProcID       =   0
    MaxHeight       =   32000
    MaximizeButton  =   True
    MaxWidth        =   32000
-   MenuBar         =   1718751231
+   MenuBar         =   1437743103
    MenuBarVisible  =   True
    MinHeight       =   64
    MinimizeButton  =   True
@@ -23,123 +23,7 @@ Begin Window Window1
    Resizeable      =   True
    Title           =   "Game Of Life"
    Visible         =   True
-   Width           =   569
-   Begin PlacardButton playpause
-      AcceptFocus     =   True
-      AcceptTabs      =   ""
-      AutoDeactivate  =   True
-      Backdrop        =   ""
-      bold            =   ""
-      caption         =   ""
-      DoubleBuffer    =   False
-      Enabled         =   True
-      EraseBackground =   True
-      hasIcon         =   ""
-      Height          =   28
-      HelpTag         =   ""
-      Icon            =   719679487
-      iconDX          =   0
-      iconDY          =   0
-      Index           =   -2147483648
-      InitialParent   =   ""
-      invertTextColor =   ""
-      isSticky        =   True
-      italic          =   ""
-      Left            =   20
-      LockBottom      =   True
-      LockedInPosition=   False
-      LockLeft        =   True
-      LockRight       =   ""
-      LockTop         =   False
-      Scope           =   0
-      TabIndex        =   1
-      TabPanelIndex   =   0
-      TabStop         =   True
-      textColor       =   0
-      textFont        =   "System"
-      textSize        =   0
-      Top             =   619
-      underline       =   ""
-      UseFocusRing    =   True
-      value           =   ""
-      Visible         =   True
-      Width           =   42
-   End
-   Begin PlacardButton Reseter
-      AcceptFocus     =   ""
-      AcceptTabs      =   ""
-      AutoDeactivate  =   True
-      Backdrop        =   ""
-      bold            =   ""
-      caption         =   ""
-      DoubleBuffer    =   False
-      Enabled         =   True
-      EraseBackground =   True
-      hasIcon         =   ""
-      Height          =   28
-      HelpTag         =   ""
-      Icon            =   644884479
-      iconDX          =   0
-      iconDY          =   0
-      Index           =   -2147483648
-      InitialParent   =   ""
-      invertTextColor =   ""
-      isSticky        =   0
-      italic          =   ""
-      Left            =   74
-      LockBottom      =   True
-      LockedInPosition=   False
-      LockLeft        =   True
-      LockRight       =   False
-      LockTop         =   False
-      Scope           =   0
-      TabIndex        =   2
-      TabPanelIndex   =   0
-      TabStop         =   True
-      textColor       =   0
-      textFont        =   "System"
-      textSize        =   0
-      Top             =   619
-      underline       =   ""
-      UseFocusRing    =   True
-      value           =   ""
-      Visible         =   True
-      Width           =   30
-   End
-   Begin Label LifeForms
-      AutoDeactivate  =   True
-      Bold            =   ""
-      DataField       =   ""
-      DataSource      =   ""
-      Enabled         =   True
-      Height          =   20
-      HelpTag         =   ""
-      Index           =   -2147483648
-      InitialParent   =   ""
-      Italic          =   ""
-      Left            =   394
-      LockBottom      =   True
-      LockedInPosition=   False
-      LockLeft        =   False
-      LockRight       =   True
-      LockTop         =   False
-      Multiline       =   ""
-      Scope           =   0
-      Selectable      =   False
-      TabIndex        =   4
-      TabPanelIndex   =   0
-      Text            =   ""
-      TextAlign       =   2
-      TextColor       =   0
-      TextFont        =   "System"
-      TextSize        =   0
-      TextUnit        =   0
-      Top             =   632
-      Transparent     =   False
-      Underline       =   ""
-      Visible         =   True
-      Width           =   175
-   End
+   Width           =   6.0e+2
    Begin Slider Slider1
       AutoDeactivate  =   True
       Enabled         =   True
@@ -147,7 +31,7 @@ Begin Window Window1
       HelpTag         =   ""
       Index           =   -2147483648
       InitialParent   =   ""
-      Left            =   116
+      Left            =   0
       LineStep        =   1
       LiveScroll      =   ""
       LockBottom      =   True
@@ -163,7 +47,7 @@ Begin Window Window1
       TabPanelIndex   =   0
       TabStop         =   True
       TickStyle       =   0
-      Top             =   619
+      Top             =   601
       Value           =   5
       Visible         =   True
       Width           =   105
@@ -173,10 +57,10 @@ Begin Window Window1
       AcceptTabs      =   ""
       AutoDeactivate  =   True
       Backdrop        =   ""
-      DoubleBuffer    =   False
+      DoubleBuffer    =   True
       Enabled         =   True
       EraseBackground =   False
-      Height          =   612
+      Height          =   600
       HelpTag         =   ""
       Index           =   -2147483648
       InitialParent   =   ""
@@ -193,7 +77,7 @@ Begin Window Window1
       Top             =   0
       UseFocusRing    =   True
       Visible         =   True
-      Width           =   569
+      Width           =   600
    End
    Begin Slider Slider2
       AutoDeactivate  =   True
@@ -202,7 +86,7 @@ Begin Window Window1
       HelpTag         =   ""
       Index           =   -2147483648
       InitialParent   =   ""
-      Left            =   242
+      Left            =   117
       LineStep        =   1
       LiveScroll      =   ""
       LockBottom      =   True
@@ -218,7 +102,7 @@ Begin Window Window1
       TabPanelIndex   =   0
       TabStop         =   True
       TickStyle       =   0
-      Top             =   619
+      Top             =   601
       Value           =   0
       Visible         =   True
       Width           =   105
@@ -227,7 +111,7 @@ Begin Window Window1
       Height          =   32
       Index           =   -2147483648
       InitialParent   =   ""
-      Left            =   653
+      Left            =   658
       LockedInPosition=   False
       Mode            =   2
       Period          =   500
@@ -248,7 +132,7 @@ Begin Window Window1
       Index           =   -2147483648
       InitialParent   =   ""
       Italic          =   ""
-      Left            =   359
+      Left            =   234
       LockBottom      =   True
       LockedInPosition=   False
       LockLeft        =   True
@@ -262,7 +146,7 @@ Begin Window Window1
       TextFont        =   "System"
       TextSize        =   0
       TextUnit        =   0
-      Top             =   619
+      Top             =   601
       Underline       =   ""
       Value           =   True
       Visible         =   True
@@ -274,6 +158,7 @@ End
 #tag WindowCode
 	#tag Event
 		Function CancelClose(appQuitting as Boolean) As Boolean
+		  #pragma Unused appQuitting
 		  If RenderThread.State = Thread.Running Then RenderThread.Kill
 		End Function
 	#tag EndEvent
@@ -294,7 +179,40 @@ End
 
 
 	#tag MenuHandler
-		Function ResetItem() As Boolean Handles ResetItem.Action
+		Function ClearWorld() As Boolean Handles ClearWorld.Action
+			AcquireRenderLock()
+			Reset(False)
+			Repaint()
+			Canvas1.Invalidate
+			RenderLock.Release
+			Return True
+			
+		End Function
+	#tag EndMenuHandler
+
+	#tag MenuHandler
+		Function FileQuit() As Boolean Handles FileQuit.Action
+			Quit()
+			Return True
+			
+		End Function
+	#tag EndMenuHandler
+
+	#tag MenuHandler
+		Function OpenWorldFile() As Boolean Handles OpenWorldFile.Action
+			Dim f As FolderItem = GetOpenFolderItem(FileTypes1.All)
+			If f <> Nil Then
+			Dim bs As BinaryStream = BinaryStream.Open(f, True)
+			LoadWorld(bs)
+			bs.Close
+			End If
+			Return True
+			
+		End Function
+	#tag EndMenuHandler
+
+	#tag MenuHandler
+		Function Randomize() As Boolean Handles Randomize.Action
 			Reset()
 			Repaint()
 			Canvas1.Refresh(False)
@@ -303,6 +221,42 @@ End
 		End Function
 	#tag EndMenuHandler
 
+	#tag MenuHandler
+		Function RunItem() As Boolean Handles RunItem.Action
+			Pause = Not Pause
+			If RenderThread.State <> Thread.Running And RenderThread.State <> Thread.Sleeping Then RenderThread.Run
+			Return True
+			
+		End Function
+	#tag EndMenuHandler
+
+	#tag MenuHandler
+		Function SaveWorldFile() As Boolean Handles SaveWorldFile.Action
+			Dim dlg As New SaveAsDialog
+			dlg.Filter = FileTypes1.All
+			dlg.SuggestedFileName = "New World"
+			dlg.Title = "Save GOL world"
+			If dlg.ShowModal <> Nil Then
+			If NthField(dlg.Result.Name, ".", CountFields(dlg.Result.Name, ".")) <> "gol" Then
+			dlg.Result.Name = dlg.Result.Name + ".gol"
+			End If
+			Dim bs As BinaryStream = BinaryStream.Create(dlg.Result, True)
+			Call SaveWorld(bs)
+			bs.Close
+			End If
+			Return True
+			
+		End Function
+	#tag EndMenuHandler
+
+
+	#tag Method, Flags = &h0
+		Sub AcquireRenderLock()
+		  While Not RenderLock.TrySignal
+		    App.YieldToNextThread
+		  Wend
+		End Sub
+	#tag EndMethod
 
 	#tag Method, Flags = &h0
 		Function Fire(X As Integer, Y As Integer) As Integer
@@ -362,7 +316,60 @@ End
 		    Return alive
 		    
 		  End Select
+		  
+		Exception
+		  Quit
 		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub LoadWorld(ReadFrom As Readable)
+		  AcquireRenderLock()
+		  Dim y As Integer
+		  Dim x As Integer
+		  If ReadFrom.Read(3) <> "GOL" Then Raise New UnsupportedFormatException
+		  Dim sz As String
+		  While Not ReadFrom.EOF
+		    Dim char As String = ReadFrom.Read(1)
+		    If char = "#" Then
+		      Exit While
+		    Else
+		      sz = sz + char
+		    End If
+		  Wend
+		  Dim sX, sY As Integer
+		  sX = Val(NthField(sz, "*", 1))
+		  sY = Val(NthField(sz, "*", 2))
+		  If sX > UBound(WorldArray, 1) Then Slider1.Value = World.Width / sX
+		  Reset(False)
+		  
+		  
+		  While Not ReadFrom.EOF
+		    Dim char As String = ReadFrom.Read(1)
+		    Select Case char
+		    Case "X"
+		      WorldArray(X, Y) = alive
+		      Y = Y + 1
+		    Case "-"
+		      WorldArray(X, Y) = dead
+		      Y = Y + 1
+		    Case "!"
+		      X = X + 1
+		      Y = 0
+		    Else
+		      If char = "E" And ReadFrom.Read(2) = "OF" Then Exit While
+		      Raise New UnsupportedFormatException
+		    End Select
+		  Wend
+		  Repaint
+		  RenderLock.Release
+		  Canvas1.Invalidate
+		  
+		Exception Err As OutOfBoundsException
+		  Call MsgBox("Increase the window size or decrease the cell size to open this file.", 16, "World too large for current settings")
+		  RenderLock.Release
+		  
+		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
@@ -388,7 +395,7 @@ End
 		  Next
 		  
 		  If ShowGrid.Value Then
-		    wg.ForeColor = GridColor
+		    wg.ForeColor = RGB(GridColor.Red, GridColor.Green, GridColor.Blue, &h99)
 		    Dim c As Integer = Max(Canvas1.Width, Canvas1.Height)
 		    For X As Integer = 0 To c Step CellSize
 		      wg.DrawLine(X, 0, X, Canvas1.Height)
@@ -403,30 +410,53 @@ End
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub Reset()
+		Sub Reset(Populate As Boolean = True)
 		  World = New Picture(Me.Width, Me.Height, 32)
 		  ReDim WorldArray(-1, -1)
-		  ReDim WorldArray(World.Width \ CellSize, World.Height \ CellSize)
+		  ReDim WorldArray(World.Width \ CellSize + 1, World.Height \ CellSize + 1)
 		  GenCount = 0
-		  Dim rand As New Random
-		  For X As Integer = 0 To UBound(WorldArray, 1)
-		    For Y As Integer = 0 To UBound(WorldArray, 2)
-		      If Rand.InRange(2, 10) = 8 Then
-		        WorldArray(X, Y) = alive
-		      Else
-		        WorldArray(X, Y) = dead
+		  If Populate Then
+		    Dim rand As New Random
+		    For X As Integer = 0 To UBound(WorldArray, 1)
+		      For Y As Integer = 0 To UBound(WorldArray, 2)
+		        If Rand.InRange(2, 10) = 8 Then
+		          WorldArray(X, Y) = alive
+		        Else
+		          WorldArray(X, Y) = dead
+		        End If
+		      Next
+		    Next
+		  End If
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function SaveWorld(WriteTo As Writeable) As Boolean
+		  AcquireRenderLock()
+		  Dim X, Y As Integer
+		  X = UBound(WorldArray, 1)
+		  Y = UBound(WorldArray, 2)
+		  WriteTo.Write("GOL" + Format(X + 1, "#########0") + "*" + Format(Y + 1, "#########0") + "#")
+		  For i As Integer = 0 To X
+		    For j As Integer = 0 To Y
+		      If WorldArray(i, j) = alive Then
+		        WriteTo.Write("X")
+		      ElseIf WorldArray(i, j) = dead Then
+		        WriteTo.Write("-")
 		      End If
 		    Next
+		    WriteTo.Write("!")
 		  Next
-		End Sub
+		  WriteTo.Write("EOF")
+		  RenderLock.Release
+		  Return True
+		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
 		Private Sub ThreadRun(Sender As Thread)
 		  Do
-		    While Not RenderLock.TrySignal
-		      App.YieldToNextThread
-		    Wend
+		    AcquireRenderLock()
 		    If Pause Then
 		      RenderLock.Release
 		      Continue
@@ -473,8 +503,9 @@ End
 		      MsgBox("Biostasis achieved after " + Format(GenCount, "###,###,###,###,###,###,##0") + " generations.")
 		      Exit Do
 		    End If
-		    Sender.Sleep(Slider2.Value)
 		    RenderLock.Release
+		    Sender.Sleep(Slider2.Value)
+		    App.YieldToNextThread
 		  Loop
 		  RenderLock.Release
 		End Sub
@@ -482,7 +513,7 @@ End
 
 
 	#tag Property, Flags = &h0
-		CellSize As Integer = 5
+		CellSize As Integer = 10
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
@@ -558,23 +589,6 @@ End
 
 #tag EndWindowCode
 
-#tag Events playpause
-	#tag Event
-		Sub Action()
-		  Pause = Not Pause
-		  If RenderThread.State <> Thread.Running And RenderThread.State <> Thread.Sleeping Then RenderThread.Run
-		End Sub
-	#tag EndEvent
-#tag EndEvents
-#tag Events Reseter
-	#tag Event
-		Sub Action()
-		  Reset()
-		  Repaint()
-		  Canvas1.Refresh(False)
-		End Sub
-	#tag EndEvent
-#tag EndEvents
 #tag Events Slider1
 	#tag Event
 		Sub ValueChanged()
@@ -622,10 +636,12 @@ End
 #tag Events Timer1
 	#tag Event
 		Sub Action()
-		  If Not RenderLock.TrySignal Then
-		    Self.Title = "Game of life - " + Format(GenCount, "###,###,###,###,###,###,##0") + " generations; " + Format(LifeCount, "###,###,###,###,###,###,##0") + " life forms"
-		  Else
-		    RenderLock.Release
+		  Self.Title = "Game of life - " + Format(GenCount, "###,###,###,###,###,###,##0") + " generations"' + Format(LifeCount, "###,###,###,###,###,###,##0") + " life forms"
+		  If App.LoadFile <> Nil And App.LoadFile.Exists And Not App.LoadFile.Directory Then
+		    Dim bs As BinaryStream = BinaryStream.Open(App.LoadFile)
+		    LoadWorld(bs)
+		    bs.Close
+		    App.LoadFile = Nil
 		  End If
 		End Sub
 	#tag EndEvent
