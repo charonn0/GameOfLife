@@ -176,6 +176,15 @@ End
 	#tag EndEvent
 
 	#tag Event
+		Function KeyDown(Key As String) As Boolean
+		  If Asc(key) = &hD2 Then
+		    Self.FullScreen = Not Self.FullScreen
+		    Return True
+		  End If
+		End Function
+	#tag EndEvent
+
+	#tag Event
 		Sub Open()
 		  RenderLock = New Semaphore
 		End Sub
@@ -440,7 +449,7 @@ End
 	#tag Method, Flags = &h0
 		Sub Reset(Populate As Boolean = True)
 		  World = New Picture(Me.Width, Me.Height, 32)
-		  ReDim WorldArray(-1, -1)
+		  If Not Populate Then ReDim WorldArray(-1, -1)
 		  ReDim WorldArray(World.Width \ CellSize + 1, World.Height \ CellSize + 1)
 		  GenCount = 0
 		  If Populate Then
@@ -627,18 +636,24 @@ End
 		    Dim stable As Boolean = True
 		    
 		    Try
-		      For X As Integer = 1 To UBound(WorldArray, 1) - 1
-		        For Y As Integer = 1 To UBound(WorldArray, 2) - 1
+		      Dim u1, u2 As Integer
+		      u1 = UBound(WorldArray, 1)
+		      u2 = UBound(WorldArray, 2)
+		      For X As Integer = 1 To u1
+		        For Y As Integer = 1 To u2
+		          Dim status As Integer
 		          If GameStyle = 0 Then 'life
-		            newworld(X, Y) = Life(X, Y)
+		            status = Life(X, Y)
+		            newworld(X, Y) = status
 		          Else
-		            newworld(X, Y) = Fire(X, Y)
+		            status = Fire(X, Y)
+		            newworld(X, Y) = status
 		          End If
-		          If newworld(X, Y) = alive Then
+		          If status = alive Then
 		            lifecount = lifecount + 1
 		          End If
 		          
-		          If newworld(X, Y) <> WorldArray(X, Y) Then
+		          If status <> WorldArray(X, Y) Then
 		            stable = False
 		          End If
 		        Next
@@ -650,8 +665,7 @@ End
 		    
 		    WorldArray = newworld
 		    Repaint()
-		    'Canvas1.Refresh(False)
-		    Canvas1.Refresh(True)
+		    Canvas1.Invalidate(True) ' In my defense, the Canvas1.Paint event will yield on the main thread until RenderLock is released.
 		    
 		    
 		    If lifecount = 0 Then
