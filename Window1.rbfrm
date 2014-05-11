@@ -353,40 +353,6 @@ End
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Function Fire(X As Integer, Y As Integer) As Integer
-		  If X = 0 Or Y = 0 Or X + 1 > (Canvas1.Width \ CellSize)  Or Y + 1 > (Canvas1.Height \ CellSize) Then
-		    Return dead
-		  End If
-		  Dim rand As New Random
-		  Dim neighborcount As Integer = WorldArray(X - 1, Y - 1) + WorldArray(X, Y - 1) + WorldArray(X + 1, Y - 1) + WorldArray(X + 1, Y) + _
-		  WorldArray(X + 1, Y + 1) + WorldArray(X, Y + 1) + WorldArray(X - 1, Y + 1) + WorldArray(X - 1, Y)
-		  
-		  If neighborcount Mod fire = 0 And neighborcount > 1 Then
-		    If WorldArray(X, Y) = alive Then
-		      Return fire
-		    Else
-		      Return dead
-		    End If
-		  Else
-		    If WorldArray(X, Y) = alive Then
-		      If rand.InRange(0, FireProbability) = FireProbability Then
-		        Return fire
-		      Else
-		        Return alive
-		      End If
-		      
-		    Else
-		      If rand.InRange(0, LifeProbability) = LifeProbability Then
-		        Return alive
-		      Else
-		        Return dead
-		      End If
-		    End If
-		  End If
-		End Function
-	#tag EndMethod
-
-	#tag Method, Flags = &h0
 		Function Life(X As Integer, Y As Integer) As Integer
 		  If X = 0 Or Y = 0 Or X + 1 > (Canvas1.Width \ CellSize)  Or Y + 1 > (Canvas1.Height \ CellSize) Then
 		    Return dead
@@ -481,17 +447,10 @@ End
 		  wg.FillRect(0, 0, wg.Width, wg.Height)
 		  For X As Integer = 0 To UBound(WorldArray, 1)
 		    For Y As Integer = 0 To UBound(WorldArray, 2)
-		      Select Case WorldArray(X, Y)
-		      Case alive
+		      If WorldArray(X, Y) = alive Then 
 		        wg.ForeColor = LifeColor
-		      Case dead
-		        'wg.ForeColor = DeadColor
-		        Continue
-		      Case fire
-		        wg.ForeColor = &cFF000000
-		      End Select
-		      wg.FillRect(X * CellSize, Y * CellSize, CellSize, CellSize)
-		      
+		        wg.FillRect(X * CellSize, Y * CellSize, CellSize, CellSize)
+		      End If
 		    Next
 		  Next
 		  
@@ -566,19 +525,7 @@ End
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
-		FireProbability As Integer = 50
-	#tag EndProperty
-
-	#tag Property, Flags = &h0
-		GameStyle As Integer
-	#tag EndProperty
-
-	#tag Property, Flags = &h0
 		GenCount As UInt64
-	#tag EndProperty
-
-	#tag Property, Flags = &h0
-		GridColor As Color = &c0000A000
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
@@ -594,15 +541,11 @@ End
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
-		LifeProbability As Integer = 15
+		Modified As Boolean
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
 		Private RenderLock As Semaphore
-	#tag EndProperty
-
-	#tag Property, Flags = &h0
-		Spawn As Integer = 50
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
@@ -618,9 +561,6 @@ End
 	#tag EndConstant
 
 	#tag Constant, Name = dead, Type = Double, Dynamic = False, Default = \"0", Scope = Public
-	#tag EndConstant
-
-	#tag Constant, Name = fire, Type = Double, Dynamic = False, Default = \"2", Scope = Public
 	#tag EndConstant
 
 
@@ -716,14 +656,8 @@ End
 		      u2 = UBound(WorldArray, 2)
 		      For X As Integer = 1 To u1
 		        For Y As Integer = 1 To u2
-		          Dim status As Integer
-		          If GameStyle = 0 Then 'life
-		            status = Life(X, Y)
-		            newworld(X, Y) = status
-		          Else
-		            status = Fire(X, Y)
-		            newworld(X, Y) = status
-		          End If
+		          Dim status As Integer = Life(X, Y)
+		          newworld(X, Y) = status
 		          If status = alive Then
 		            lifecount = lifecount + 1
 		          End If
@@ -742,19 +676,11 @@ End
 		    Repaint()
 		    Canvas1.Invalidate(True) ' In my defense, the Canvas1.Paint event will yield on the main thread until RenderLock is released.
 		    
-		    
-		    If lifecount = 0 Then
-		      MsgBox("Extinction occurred after " + Format(GenCount, "###,###,###,###,###,###,##0") + " generations.")
-		      Exit Do
-		    ElseIf stable Then
-		      MsgBox("Biostasis achieved after " + Format(GenCount, "###,###,###,###,###,###,##0") + " generations.")
-		      Exit Do
-		    End If
+		    Modified = True
 		    RenderLock.Release
 		    Me.Sleep(Slider2.Value)
 		    App.YieldToNextThread
 		  Loop
-		  RenderLock.Release
 		End Sub
 	#tag EndEvent
 #tag EndEvents
