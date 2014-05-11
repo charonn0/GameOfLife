@@ -169,6 +169,16 @@ End
 
 #tag WindowCode
 	#tag Event
+		Sub Activate()
+		  If AcquireRenderLock() Then
+		    Repaint()
+		    RenderLock.Release
+		  End If
+		  Canvas1.Invalidate(True)
+		End Sub
+	#tag EndEvent
+
+	#tag Event
 		Function CancelClose(appQuitting as Boolean) As Boolean
 		  #pragma Unused appQuitting
 		  If RenderThread.State = Thread.Running Then RenderThread.Kill
@@ -185,6 +195,26 @@ End
 	#tag EndEvent
 
 	#tag Event
+		Sub Maximize()
+		  If AcquireRenderLock() Then
+		    Repaint()
+		    RenderLock.Release
+		  End If
+		  Canvas1.Invalidate(True)
+		End Sub
+	#tag EndEvent
+
+	#tag Event
+		Sub Minimize()
+		  If AcquireRenderLock() Then
+		    Repaint()
+		    RenderLock.Release
+		  End If
+		  Canvas1.Invalidate(True)
+		End Sub
+	#tag EndEvent
+
+	#tag Event
 		Sub Open()
 		  RenderLock = New Semaphore
 		End Sub
@@ -192,7 +222,22 @@ End
 
 	#tag Event
 		Sub Resized()
-		  Reset()
+		  Reset(False, False)
+		  If AcquireRenderLock() Then
+		    Repaint()
+		    RenderLock.Release
+		  End If
+		  Canvas1.Invalidate(True)
+		End Sub
+	#tag EndEvent
+
+	#tag Event
+		Sub Restore()
+		  If AcquireRenderLock() Then
+		    Repaint()
+		    RenderLock.Release
+		  End If
+		  Canvas1.Invalidate(True)
 		End Sub
 	#tag EndEvent
 
@@ -447,9 +492,9 @@ End
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub Reset(Populate As Boolean = True)
+		Sub Reset(Populate As Boolean = True, EmptyFirst As Boolean = False)
 		  World = New Picture(Me.Width, Me.Height, 32)
-		  If Not Populate Then ReDim WorldArray(-1, -1)
+		  If EmptyFirst Then ReDim WorldArray(-1, -1)
 		  ReDim WorldArray(World.Width \ CellSize + 1, World.Height \ CellSize + 1)
 		  GenCount = 0
 		  If Populate Then
@@ -582,6 +627,7 @@ End
 		    g.DrawPicture(World, 0, 0)
 		    RenderLock.Release
 		  End If
+		  
 		End Sub
 	#tag EndEvent
 	#tag Event
