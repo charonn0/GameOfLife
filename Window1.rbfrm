@@ -7,7 +7,7 @@ Begin Window Window1
    Frame           =   0
    FullScreen      =   False
    HasBackColor    =   False
-   Height          =   6.24e+2
+   Height          =   624
    ImplicitInstance=   True
    LiveResize      =   True
    MacProcID       =   0
@@ -23,7 +23,7 @@ Begin Window Window1
    Resizeable      =   True
    Title           =   "Game Of Life"
    Visible         =   True
-   Width           =   6.0e+2
+   Width           =   600
    Begin Slider Slider1
       AutoDeactivate  =   True
       Enabled         =   True
@@ -170,9 +170,9 @@ End
 #tag WindowCode
 	#tag Event
 		Sub Activate()
-		  If AcquireRenderLock() Then
+		  If AcquireWorldLock() Then
 		    Repaint()
-		    RenderLock.Release
+		    WorldLock.Release
 		  End If
 		  Canvas1.Invalidate(True)
 		End Sub
@@ -181,10 +181,16 @@ End
 	#tag Event
 		Function CancelClose(appQuitting as Boolean) As Boolean
 		  #pragma Unused appQuitting
-		  If RenderThread.State = Thread.Running Then RenderThread.Kill
+		  Dim killed As Boolean
+		  If Not AcquireWorldLock() Then
+		    RenderThread.Kill
+		    killed = True
+		  End If
 		  If Modified And WorldFile <> Nil Then
 		    Select Case MsgBox("Save changes to " + WorldFile.Name + "?", 3 + 48, "File modified")
 		    Case 2 ' cancel
+		      WorldLock.Release
+		      If killed Then RenderThread.Run
 		      Return True
 		    Case 6 ' save
 		      Dim f As FolderItem = SpecialFolder.Temporary.Child(WorldFile.Name)
@@ -195,16 +201,12 @@ End
 		        f.MoveFileTo(WorldFile)
 		      ElseIf MsgBox("Unable to save world! Quit anyway?", 4 + 16, "Error") = 6 Then
 		        bs.Close
-		        Return False
 		      Else
 		        bs.Close
-		        Return True
 		      End If
-		      
-		    Else ' quit no save
-		      Return False
 		    End Select
 		  End If
+		  
 		End Function
 	#tag EndEvent
 
@@ -219,9 +221,9 @@ End
 
 	#tag Event
 		Sub Maximize()
-		  If AcquireRenderLock() Then
+		  If AcquireWorldLock() Then
 		    Repaint()
-		    RenderLock.Release
+		    WorldLock.Release
 		  End If
 		  Canvas1.Invalidate(True)
 		End Sub
@@ -229,9 +231,9 @@ End
 
 	#tag Event
 		Sub Minimize()
-		  If AcquireRenderLock() Then
+		  If AcquireWorldLock() Then
 		    Repaint()
-		    RenderLock.Release
+		    WorldLock.Release
 		  End If
 		  Canvas1.Invalidate(True)
 		End Sub
@@ -239,16 +241,16 @@ End
 
 	#tag Event
 		Sub Open()
-		  RenderLock = New Semaphore
+		  WorldLock = New Semaphore
 		End Sub
 	#tag EndEvent
 
 	#tag Event
 		Sub Resized()
-		  Reset(False, False)
-		  If AcquireRenderLock() Then
+		  If AcquireWorldLock() Then
+		    Reset(False, False)
 		    Repaint()
-		    RenderLock.Release
+		    WorldLock.Release
 		  End If
 		  Canvas1.Invalidate(True)
 		End Sub
@@ -256,9 +258,9 @@ End
 
 	#tag Event
 		Sub Restore()
-		  If AcquireRenderLock() Then
+		  If AcquireWorldLock() Then
 		    Repaint()
-		    RenderLock.Release
+		    WorldLock.Release
 		  End If
 		  Canvas1.Invalidate(True)
 		End Sub
@@ -267,13 +269,13 @@ End
 
 	#tag MenuHandler
 		Function ClearWorld() As Boolean Handles ClearWorld.Action
-			If AcquireRenderLock() Then
+			If AcquireWorldLock() Then
 			Reset(False, True)
 			Repaint()
 			Canvas1.Invalidate
-			RenderLock.Release
+			WorldLock.Release
 			Else
-			MsgBox("Unable to lock world!")
+			MsgBox(CurrentMethodName + ": Unable to lock world!")
 			End If
 			Return True
 			
@@ -306,7 +308,7 @@ End
 
 	#tag MenuHandler
 		Function RunItem() As Boolean Handles RunItem.Action
-			If AcquireRenderLock() Then
+			If AcquireWorldLock() Then
 			Select Case RenderThread.State
 			Case Thread.Running, Thread.Sleeping
 			RenderThread.Suspend
@@ -315,9 +317,9 @@ End
 			Else
 			RenderThread.Run
 			End Select
-			RenderLock.Release
+			WorldLock.Release
 			Else
-			MsgBox("Unable to lock world!")
+			MsgBox(CurrentMethodName + ": Unable to lock world!")
 			End If
 			Return True
 			
@@ -326,8 +328,10 @@ End
 
 	#tag MenuHandler
 		Function SaveItem() As Boolean Handles SaveItem.Action
-			If AcquireRenderLock() Then
-			If WorldFile = Nil Or Not WorldFile.Exists Or WorldFile.Directory Then
+			Dim f As FolderItem
+			If WorldFile <> Nil And WorldFile.Exists And Not WorldFile.Directory Then
+			f = WorldFile
+			Else
 			Dim dlg As New SaveAsDialog
 			dlg.Filter = FileTypes1.All
 			dlg.SuggestedFileName = "New World"
@@ -336,18 +340,22 @@ End
 			If NthField(dlg.Result.Name, ".", CountFields(dlg.Result.Name, ".")) <> "gol" Then
 			dlg.Result.Name = dlg.Result.Name + ".gol"
 			End If
-			WorldFile = dlg.Result
-			Dim bs As BinaryStream = BinaryStream.Create(WorldFile, True)
+			f = dlg.Result
+			End If
+			End If
+			
+			If f <> Nil Then
+			Dim bs As BinaryStream = BinaryStream.Create(f, True)
 			Call SaveWorld(bs)
 			bs.Close
-			Repaint
+			WorldFile = f
 			Modified = False
+			If AcquireWorldLock() Then
+			Repaint
+			WorldLock.Release
 			End If
 			End If
-			RenderLock.Release
-			Else
-			MsgBox("Unable to lock world!")
-			End If
+			
 			Return True
 		End Function
 	#tag EndMenuHandler
@@ -375,9 +383,9 @@ End
 		Function SetColor() As Boolean Handles SetColor.Action
 			Dim c As Color = LifeColor
 			If SelectColor(c, "Choose life's color") Then LifeColor = c
-			If AcquireRenderLock() Then
+			If AcquireWorldLock() Then
 			Repaint()
-			RenderLock.Release
+			WorldLock.Release
 			End If
 			Canvas1.Invalidate(True)
 			Return True
@@ -387,8 +395,9 @@ End
 
 
 	#tag Method, Flags = &h0
-		Function AcquireRenderLock(TryCount As Integer = 100) As Boolean
-		  While Not RenderLock.TrySignal And TryCount > 0
+		Function AcquireWorldLock(TryCount As Integer = 100) As Boolean
+		  If WorldLock = Nil Then WorldLock = New Semaphore
+		  While Not WorldLock.TrySignal And TryCount > 0
 		    App.YieldToNextThread
 		    TryCount = TryCount - 1
 		  Wend
@@ -428,7 +437,7 @@ End
 
 	#tag Method, Flags = &h0
 		Sub LoadWorld(ReadFrom As Readable)
-		  If AcquireRenderLock() Then
+		  If AcquireWorldLock() Then
 		    Dim y As Integer
 		    Dim x As Integer
 		    If ReadFrom.Read(3) <> "GOL" Then Raise New UnsupportedFormatException
@@ -467,25 +476,28 @@ End
 		    Wend
 		    Repaint
 		    Modified = False
-		    RenderLock.Release
+		    WorldLock.Release
 		    Canvas1.Invalidate
 		  Else
-		    MsgBox("Unable to lock world!")
+		    MsgBox(CurrentMethodName + ": Unable to lock world!")
 		  End If
 		  
 		Exception Err As OutOfBoundsException
 		  Call MsgBox("Increase the window size or decrease the cell size to open this file.", 16, "World too large for current settings")
-		  RenderLock.Release
+		  WorldLock.Release
 		  
 		Exception Err As UnsupportedFormatException
 		  Call MsgBox("The file is corrupt.", 16, "Invalid data")
-		  RenderLock.Release
+		  WorldLock.Release
 		  
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
 		Private Sub Repaint()
+		  If WorldLock.TrySignal Then
+		    Raise New IllegalLockingException ' callers must call AcquireWorldLock first!
+		  End If
 		  LastWorld = World
 		  Dim wg As Graphics = World.Graphics
 		  wg.ForeColor = DeadColor
@@ -495,7 +507,7 @@ End
 		  sY = UBound(WorldArray, 2)
 		  For X As Integer = 0 To sX
 		    For Y As Integer = 0 To sY
-		      If WorldArray(X, Y) = alive Then 
+		      If WorldArray(X, Y) = alive Then
 		        wg.ForeColor = LifeColor
 		        wg.FillRect(X * CellSize, Y * CellSize, CellSize, CellSize)
 		      End If
@@ -514,11 +526,18 @@ End
 		    Next
 		  End If
 		  Timer1.Mode = Timer.ModeSingle
+		  
+		Exception
+		  Return
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
 		Sub Reset(Populate As Boolean = True, EmptyFirst As Boolean = False)
+		  If WorldLock.TrySignal Then
+		    Raise New IllegalLockingException ' callers must call AcquireWorldLock first!
+		  End If
+		  
 		  World = New Picture(Me.Width, Me.Height, 32)
 		  If EmptyFirst Then ReDim WorldArray(-1, -1)
 		  ReDim WorldArray(World.Width \ CellSize + 1, World.Height \ CellSize + 1)
@@ -540,7 +559,7 @@ End
 
 	#tag Method, Flags = &h0
 		Function SaveWorld(WriteTo As Writeable) As Boolean
-		  If AcquireRenderLock() Then
+		  If AcquireWorldLock() Then
 		    Dim X, Y As Integer
 		    X = UBound(WorldArray, 1)
 		    Y = UBound(WorldArray, 2)
@@ -557,9 +576,9 @@ End
 		    Next
 		    WriteTo.Write("EOF")
 		    Modified = False
-		    RenderLock.Release
+		    WorldLock.Release
 		  Else
-		    MsgBox("Unable to lock world!")
+		    MsgBox(CurrentMethodName + ": Unable to lock world!")
 		  End If
 		  Return True
 		End Function
@@ -594,10 +613,6 @@ End
 		Modified As Boolean
 	#tag EndProperty
 
-	#tag Property, Flags = &h21
-		Private RenderLock As Semaphore
-	#tag EndProperty
-
 	#tag Property, Flags = &h0
 		World As Picture
 	#tag EndProperty
@@ -608,6 +623,10 @@ End
 
 	#tag Property, Flags = &h21
 		Private WorldFile As FolderItem
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private WorldLock As Semaphore
 	#tag EndProperty
 
 
@@ -623,9 +642,12 @@ End
 #tag Events Slider1
 	#tag Event
 		Sub ValueChanged()
-		  CellSize = Me.Value
-		  Reset(False, False)
-		  Repaint()
+		  If AcquireWorldLock() Then
+		    CellSize = Me.Value
+		    Reset(False, False)
+		    Repaint()
+		    WorldLock.Release
+		  End If
 		  Canvas1.Refresh(False)
 		End Sub
 	#tag EndEvent
@@ -633,18 +655,21 @@ End
 #tag Events Canvas1
 	#tag Event
 		Sub Paint(g As Graphics)
-		  If Not RenderLock.TrySignal Then
+		  If Not WorldLock.TrySignal Then
 		    g.DrawPicture(LastWorld, 0, 0)
 		  Else
 		    g.DrawPicture(World, 0, 0)
-		    RenderLock.Release
+		    WorldLock.Release
 		  End If
 		  
 		End Sub
 	#tag EndEvent
 	#tag Event
 		Sub Open()
-		  Reset()
+		  If AcquireWorldLock() Then
+		    Reset()
+		    WorldLock.Release
+		  End If
 		End Sub
 	#tag EndEvent
 	#tag Event
@@ -668,7 +693,7 @@ End
 #tag Events Timer1
 	#tag Event
 		Sub Action()
-		  If AcquireRenderLock() Then
+		  If AcquireWorldLock() Then
 		    Dim sx, sy As Integer
 		    sx = UBound(WorldArray, 1)
 		    sy = UBound(WorldArray, 2)
@@ -687,7 +712,7 @@ End
 		      WorldFile = App.LoadFile
 		      App.LoadFile = Nil
 		    End If
-		    RenderLock.Release
+		    WorldLock.Release
 		  End If
 		End Sub
 	#tag EndEvent
@@ -695,9 +720,9 @@ End
 #tag Events ShowGrid
 	#tag Event
 		Sub Action()
-		  If AcquireRenderLock() Then
+		  If AcquireWorldLock() Then
 		    Repaint()
-		    RenderLock.Release
+		    WorldLock.Release
 		  End If
 		  Canvas1.Invalidate(True)
 		End Sub
@@ -706,9 +731,10 @@ End
 #tag Events RenderThread
 	#tag Event
 		Sub Run()
+		  #pragma BoundsChecking Off
 		  Do
 		    App.YieldToNextThread
-		    If Not AcquireRenderLock() Then
+		    If Not AcquireWorldLock() Then
 		      Continue
 		    End If
 		    
@@ -736,16 +762,16 @@ End
 		        Next
 		      Next
 		    Catch Err As OutOfBoundsException ' resized!
-		      RenderLock.Release
+		      WorldLock.Release
 		      Continue
 		    End Try
 		    
 		    WorldArray = newworld
 		    Repaint()
-		    Canvas1.Invalidate(True) ' In my defense, the Canvas1.Paint event will yield on the main thread until RenderLock is released.
+		    Canvas1.Invalidate(True) ' In my defense, the Canvas1.Paint event will yield on the main thread until WorldLock is released.
 		    
 		    Modified = True
-		    RenderLock.Release
+		    WorldLock.Release
 		    Me.Sleep(Slider2.Value)
 		    App.YieldToNextThread
 		  Loop
