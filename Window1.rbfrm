@@ -402,6 +402,25 @@ End
 		End Function
 	#tag EndMenuHandler
 
+	#tag MenuHandler
+		Function StepItem() As Boolean Handles StepItem.Action
+			StepGen = True
+			Select Case RenderThread.State
+			Case Thread.Running, Thread.Sleeping
+			' just wait
+			Case Thread.Suspended
+			RenderThread.Resume
+			Else
+			RenderThread.Run
+			End Select
+			
+			Return True
+			
+			Return True
+			
+		End Function
+	#tag EndMenuHandler
+
 
 	#tag Method, Flags = &h0
 		Function AcquireWorldLock(TryCount As Integer = 100) As Boolean
@@ -623,6 +642,10 @@ End
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
+		StepGen As Boolean
+	#tag EndProperty
+
+	#tag Property, Flags = &h0
 		World As Picture
 	#tag EndProperty
 
@@ -770,19 +793,21 @@ End
 		          End If
 		        Next
 		      Next
-		    Catch Err As OutOfBoundsException ' resized!
+		      
+		      WorldArray = newworld
+		      Repaint()
+		      Canvas1.Invalidate(True) ' In my defense, the Canvas1.Paint event will yield on the main thread until WorldLock is released.
+		      
+		      Modified = True
+		    Finally
 		      WorldLock.Release
-		      Continue
+		      Me.Sleep(Slider2.Value)
+		      App.YieldToNextThread
+		      If StepGen Then
+		        StepGen = False
+		        Me.Suspend
+		      End If
 		    End Try
-		    
-		    WorldArray = newworld
-		    Repaint()
-		    Canvas1.Invalidate(True) ' In my defense, the Canvas1.Paint event will yield on the main thread until WorldLock is released.
-		    
-		    Modified = True
-		    WorldLock.Release
-		    Me.Sleep(Slider2.Value)
-		    App.YieldToNextThread
 		  Loop
 		End Sub
 	#tag EndEvent

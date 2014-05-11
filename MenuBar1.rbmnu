@@ -38,6 +38,15 @@ Begin Menu MenuBar1
          MenuModifier = True
          AutoEnable = True
       End
+      Begin MenuItem StepItem
+         SpecialMenu = 0
+         Text = "Step generation"
+         Index = -2147483648
+         ShortcutKey = "T"
+         Shortcut = "Cmd+T"
+         MenuModifier = True
+         AutoEnable = True
+      End
       Begin MenuItem Randomize
          SpecialMenu = 0
          Text = "Randomize"
