@@ -466,6 +466,10 @@ End
 		  Call MsgBox("Increase the window size or decrease the cell size to open this file.", 16, "World too large for current settings")
 		  RenderLock.Release
 		  
+		Exception Err As UnsupportedFormatException
+		  Call MsgBox("The file is corrupt.", 16, "Invalid data")
+		  RenderLock.Release
+		  
 		End Sub
 	#tag EndMethod
 
@@ -492,7 +496,7 @@ End
 		  Next
 		  
 		  If ShowGrid.Value Then
-		    wg.ForeColor = RGB(GridColor.Red, GridColor.Green, GridColor.Blue, &h99)
+		    wg.ForeColor = RGB(LifeColor.Red, LifeColor.Green, LifeColor.Blue, &h99)
 		    Dim c As Integer = Max(Canvas1.Width, Canvas1.Height)
 		    For X As Integer = 0 To c Step CellSize
 		      wg.DrawLine(X, 0, X, Canvas1.Height)
