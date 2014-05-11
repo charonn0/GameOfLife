@@ -152,6 +152,18 @@ Begin Window Window1
       Visible         =   True
       Width           =   100
    End
+   Begin Thread RenderThread
+      Height          =   32
+      Index           =   -2147483648
+      Left            =   658
+      LockedInPosition=   False
+      Priority        =   5
+      Scope           =   0
+      StackSize       =   0
+      TabPanelIndex   =   0
+      Top             =   44
+      Width           =   32
+   End
 End
 #tag EndWindow
 
@@ -166,8 +178,6 @@ End
 	#tag Event
 		Sub Open()
 		  RenderLock = New Semaphore
-		  RenderThread = New Thread
-		  AddHandler RenderThread.Run, WeakAddressOf ThreadRun
 		End Sub
 	#tag EndEvent
 
@@ -180,11 +190,14 @@ End
 
 	#tag MenuHandler
 		Function ClearWorld() As Boolean Handles ClearWorld.Action
-			AcquireRenderLock()
+			If AcquireRenderLock() Then
 			Reset(False)
 			Repaint()
 			Canvas1.Invalidate
 			RenderLock.Release
+			Else
+			MsgBox("Unable to lock world!")
+			End If
 			Return True
 			
 		End Function
@@ -223,8 +236,19 @@ End
 
 	#tag MenuHandler
 		Function RunItem() As Boolean Handles RunItem.Action
-			Pause = Not Pause
-			If RenderThread.State <> Thread.Running And RenderThread.State <> Thread.Sleeping Then RenderThread.Run
+			If AcquireRenderLock() Then
+			Select Case RenderThread.State
+			Case Thread.Running, Thread.Sleeping
+			RenderThread.Suspend
+			Case Thread.Suspended
+			RenderThread.Resume
+			Else
+			RenderThread.Run
+			End Select
+			RenderLock.Release
+			Else
+			MsgBox("Unable to lock world!")
+			End If
 			Return True
 			
 		End Function
@@ -251,11 +275,13 @@ End
 
 
 	#tag Method, Flags = &h0
-		Sub AcquireRenderLock()
-		  While Not RenderLock.TrySignal
+		Function AcquireRenderLock(TryCount As Integer = 100) As Boolean
+		  While Not RenderLock.TrySignal And TryCount > 0
 		    App.YieldToNextThread
+		    TryCount = TryCount - 1
 		  Wend
-		End Sub
+		  Return TryCount > 0
+		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
@@ -324,46 +350,49 @@ End
 
 	#tag Method, Flags = &h0
 		Sub LoadWorld(ReadFrom As Readable)
-		  AcquireRenderLock()
-		  Dim y As Integer
-		  Dim x As Integer
-		  If ReadFrom.Read(3) <> "GOL" Then Raise New UnsupportedFormatException
-		  Dim sz As String
-		  While Not ReadFrom.EOF
-		    Dim char As String = ReadFrom.Read(1)
-		    If char = "#" Then
-		      Exit While
-		    Else
-		      sz = sz + char
-		    End If
-		  Wend
-		  Dim sX, sY As Integer
-		  sX = Val(NthField(sz, "*", 1))
-		  sY = Val(NthField(sz, "*", 2))
-		  If sX > UBound(WorldArray, 1) Then Slider1.Value = World.Width / sX
-		  Reset(False)
-		  
-		  
-		  While Not ReadFrom.EOF
-		    Dim char As String = ReadFrom.Read(1)
-		    Select Case char
-		    Case "X"
-		      WorldArray(X, Y) = alive
-		      Y = Y + 1
-		    Case "-"
-		      WorldArray(X, Y) = dead
-		      Y = Y + 1
-		    Case "!"
-		      X = X + 1
-		      Y = 0
-		    Else
-		      If char = "E" And ReadFrom.Read(2) = "OF" Then Exit While
-		      Raise New UnsupportedFormatException
-		    End Select
-		  Wend
-		  Repaint
-		  RenderLock.Release
-		  Canvas1.Invalidate
+		  If AcquireRenderLock() Then
+		    Dim y As Integer
+		    Dim x As Integer
+		    If ReadFrom.Read(3) <> "GOL" Then Raise New UnsupportedFormatException
+		    Dim sz As String
+		    While Not ReadFrom.EOF
+		      Dim char As String = ReadFrom.Read(1)
+		      If char = "#" Then
+		        Exit While
+		      Else
+		        sz = sz + char
+		      End If
+		    Wend
+		    Dim sX, sY As Integer
+		    sX = Val(NthField(sz, "*", 1))
+		    sY = Val(NthField(sz, "*", 2))
+		    If sX > UBound(WorldArray, 1) Then Slider1.Value = World.Width / sX
+		    Reset(False)
+		    
+		    
+		    While Not ReadFrom.EOF
+		      Dim char As String = ReadFrom.Read(1)
+		      Select Case char
+		      Case "X"
+		        WorldArray(X, Y) = alive
+		        Y = Y + 1
+		      Case "-"
+		        WorldArray(X, Y) = dead
+		        Y = Y + 1
+		      Case "!"
+		        X = X + 1
+		        Y = 0
+		      Else
+		        If char = "E" And ReadFrom.Read(2) = "OF" Then Exit While
+		        Raise New UnsupportedFormatException
+		      End Select
+		    Wend
+		    Repaint
+		    RenderLock.Release
+		    Canvas1.Invalidate
+		  Else
+		    MsgBox("Unable to lock world!")
+		  End If
 		  
 		Exception Err As OutOfBoundsException
 		  Call MsgBox("Increase the window size or decrease the cell size to open this file.", 16, "World too large for current settings")
@@ -405,7 +434,6 @@ End
 		      wg.DrawLine(0, Y, Canvas1.Width, Y)
 		    Next
 		  End If
-		  
 		End Sub
 	#tag EndMethod
 
@@ -432,83 +460,28 @@ End
 
 	#tag Method, Flags = &h0
 		Function SaveWorld(WriteTo As Writeable) As Boolean
-		  AcquireRenderLock()
-		  Dim X, Y As Integer
-		  X = UBound(WorldArray, 1)
-		  Y = UBound(WorldArray, 2)
-		  WriteTo.Write("GOL" + Format(X + 1, "#########0") + "*" + Format(Y + 1, "#########0") + "#")
-		  For i As Integer = 0 To X
-		    For j As Integer = 0 To Y
-		      If WorldArray(i, j) = alive Then
-		        WriteTo.Write("X")
-		      ElseIf WorldArray(i, j) = dead Then
-		        WriteTo.Write("-")
-		      End If
+		  If AcquireRenderLock() Then
+		    Dim X, Y As Integer
+		    X = UBound(WorldArray, 1)
+		    Y = UBound(WorldArray, 2)
+		    WriteTo.Write("GOL" + Format(X + 1, "#########0") + "*" + Format(Y + 1, "#########0") + "#")
+		    For i As Integer = 0 To X
+		      For j As Integer = 0 To Y
+		        If WorldArray(i, j) = alive Then
+		          WriteTo.Write("X")
+		        ElseIf WorldArray(i, j) = dead Then
+		          WriteTo.Write("-")
+		        End If
+		      Next
+		      WriteTo.Write("!")
 		    Next
-		    WriteTo.Write("!")
-		  Next
-		  WriteTo.Write("EOF")
-		  RenderLock.Release
+		    WriteTo.Write("EOF")
+		    RenderLock.Release
+		  Else
+		    MsgBox("Unable to lock world!")
+		  End If
 		  Return True
 		End Function
-	#tag EndMethod
-
-	#tag Method, Flags = &h21
-		Private Sub ThreadRun(Sender As Thread)
-		  Do
-		    AcquireRenderLock()
-		    If Pause Then
-		      RenderLock.Release
-		      Continue
-		    End If
-		    
-		    LifeCount = 0
-		    Dim newworld(-1, -1) As Integer
-		    ReDim newworld(UBound(WorldArray, 1), UBound(WorldArray, 2))
-		    GenCount = GenCount + 1
-		    Dim stable As Boolean = True
-		    
-		    Try
-		      For X As Integer = 1 To UBound(WorldArray, 1) - 1
-		        For Y As Integer = 1 To UBound(WorldArray, 2) - 1
-		          If GameStyle = 0 Then 'life
-		            newworld(X, Y) = Life(X, Y)
-		          Else
-		            newworld(X, Y) = Fire(X, Y)
-		          End If
-		          If newworld(X, Y) = alive Then
-		            lifecount = lifecount + 1
-		          End If
-		          
-		          If newworld(X, Y) <> WorldArray(X, Y) Then
-		            stable = False
-		          End If
-		        Next
-		      Next
-		    Catch Err As OutOfBoundsException ' resized!
-		      RenderLock.Release
-		      Continue
-		    End Try
-		    
-		    WorldArray = newworld
-		    Repaint()
-		    'Canvas1.Refresh(False)
-		    Canvas1.Refresh(True)
-		    
-		    
-		    If lifecount = 0 Then
-		      MsgBox("Extinction occurred after " + Format(GenCount, "###,###,###,###,###,###,##0") + " generations.")
-		      Exit Do
-		    ElseIf stable Then
-		      MsgBox("Biostasis achieved after " + Format(GenCount, "###,###,###,###,###,###,##0") + " generations.")
-		      Exit Do
-		    End If
-		    RenderLock.Release
-		    Sender.Sleep(Slider2.Value)
-		    App.YieldToNextThread
-		  Loop
-		  RenderLock.Release
-		End Sub
 	#tag EndMethod
 
 
@@ -552,16 +525,8 @@ End
 		LifeProbability As Integer = 15
 	#tag EndProperty
 
-	#tag Property, Flags = &h0
-		Pause As Boolean = True
-	#tag EndProperty
-
 	#tag Property, Flags = &h21
 		Private RenderLock As Semaphore
-	#tag EndProperty
-
-	#tag Property, Flags = &h21
-		Private RenderThread As Thread
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
@@ -643,6 +608,64 @@ End
 		    bs.Close
 		    App.LoadFile = Nil
 		  End If
+		End Sub
+	#tag EndEvent
+#tag EndEvents
+#tag Events RenderThread
+	#tag Event
+		Sub Run()
+		  Do
+		    App.YieldToNextThread
+		    If Not AcquireRenderLock() Then
+		      Continue
+		    End If
+		    
+		    LifeCount = 0
+		    Dim newworld(-1, -1) As Integer
+		    ReDim newworld(UBound(WorldArray, 1), UBound(WorldArray, 2))
+		    GenCount = GenCount + 1
+		    Dim stable As Boolean = True
+		    
+		    Try
+		      For X As Integer = 1 To UBound(WorldArray, 1) - 1
+		        For Y As Integer = 1 To UBound(WorldArray, 2) - 1
+		          If GameStyle = 0 Then 'life
+		            newworld(X, Y) = Life(X, Y)
+		          Else
+		            newworld(X, Y) = Fire(X, Y)
+		          End If
+		          If newworld(X, Y) = alive Then
+		            lifecount = lifecount + 1
+		          End If
+		          
+		          If newworld(X, Y) <> WorldArray(X, Y) Then
+		            stable = False
+		          End If
+		        Next
+		      Next
+		    Catch Err As OutOfBoundsException ' resized!
+		      RenderLock.Release
+		      Continue
+		    End Try
+		    
+		    WorldArray = newworld
+		    Repaint()
+		    'Canvas1.Refresh(False)
+		    Canvas1.Refresh(True)
+		    
+		    
+		    If lifecount = 0 Then
+		      MsgBox("Extinction occurred after " + Format(GenCount, "###,###,###,###,###,###,##0") + " generations.")
+		      Exit Do
+		    ElseIf stable Then
+		      MsgBox("Biostasis achieved after " + Format(GenCount, "###,###,###,###,###,###,##0") + " generations.")
+		      Exit Do
+		    End If
+		    RenderLock.Release
+		    Me.Sleep(Slider2.Value)
+		    App.YieldToNextThread
+		  Loop
+		  RenderLock.Release
 		End Sub
 	#tag EndEvent
 #tag EndEvents
