@@ -52,33 +52,6 @@ Begin Window Window1
       Visible         =   True
       Width           =   105
    End
-   Begin Canvas Canvas1
-      AcceptFocus     =   ""
-      AcceptTabs      =   ""
-      AutoDeactivate  =   True
-      Backdrop        =   ""
-      DoubleBuffer    =   True
-      Enabled         =   True
-      EraseBackground =   False
-      Height          =   600
-      HelpTag         =   ""
-      Index           =   -2147483648
-      InitialParent   =   ""
-      Left            =   0
-      LockBottom      =   True
-      LockedInPosition=   False
-      LockLeft        =   True
-      LockRight       =   True
-      LockTop         =   True
-      Scope           =   0
-      TabIndex        =   8
-      TabPanelIndex   =   0
-      TabStop         =   True
-      Top             =   0
-      UseFocusRing    =   True
-      Visible         =   True
-      Width           =   600
-   End
    Begin Slider Slider2
       AutoDeactivate  =   True
       Enabled         =   True
@@ -164,6 +137,29 @@ Begin Window Window1
       Top             =   44
       Width           =   32
    End
+   Begin DXSurface RenderSurface
+      AutoDeactivate  =   True
+      AutoInit        =   False
+      Enabled         =   True
+      FullScreen      =   ""
+      Height          =   600
+      HelpTag         =   ""
+      Index           =   -2147483648
+      InitialParent   =   ""
+      Left            =   0
+      LockBottom      =   True
+      LockedInPosition=   False
+      LockLeft        =   True
+      LockRight       =   True
+      LockTop         =   True
+      Scope           =   0
+      TabIndex        =   8
+      TabPanelIndex   =   0
+      TabStop         =   True
+      Top             =   0
+      Visible         =   True
+      Width           =   600
+   End
 End
 #tag EndWindow
 
@@ -174,7 +170,7 @@ End
 		    Repaint()
 		    RenderLock.Release
 		  End If
-		  Canvas1.Invalidate(True)
+		  DoRender
 		End Sub
 	#tag EndEvent
 
@@ -223,7 +219,7 @@ End
 		    Repaint()
 		    RenderLock.Release
 		  End If
-		  Canvas1.Invalidate(True)
+		  DoRender
 		End Sub
 	#tag EndEvent
 
@@ -233,7 +229,7 @@ End
 		    Repaint()
 		    RenderLock.Release
 		  End If
-		  Canvas1.Invalidate(True)
+		  DoRender
 		End Sub
 	#tag EndEvent
 
@@ -250,7 +246,7 @@ End
 		    Repaint()
 		    RenderLock.Release
 		  End If
-		  Canvas1.Invalidate(True)
+		  DoRender
 		End Sub
 	#tag EndEvent
 
@@ -260,7 +256,7 @@ End
 		    Repaint()
 		    RenderLock.Release
 		  End If
-		  Canvas1.Invalidate(True)
+		  DoRender
 		End Sub
 	#tag EndEvent
 
@@ -270,7 +266,7 @@ End
 			If AcquireRenderLock() Then
 			Reset(False, True)
 			Repaint()
-			Canvas1.Invalidate
+			DoRender
 			RenderLock.Release
 			Else
 			MsgBox("Unable to lock world!")
@@ -298,7 +294,7 @@ End
 		Function Randomize() As Boolean Handles Randomize.Action
 			Reset()
 			Repaint()
-			Canvas1.Refresh(False)
+			DoRender
 			Return True
 			
 		End Function
@@ -379,7 +375,7 @@ End
 			Repaint()
 			RenderLock.Release
 			End If
-			Canvas1.Invalidate(True)
+			DoRender
 			Return True
 			
 		End Function
@@ -396,9 +392,16 @@ End
 		End Function
 	#tag EndMethod
 
+	#tag Method, Flags = &h21
+		Private Sub DoRender()
+		  RenderSurface.Render
+		  RenderSurface.Flip
+		End Sub
+	#tag EndMethod
+
 	#tag Method, Flags = &h0
 		Function Life(X As Integer, Y As Integer) As Integer
-		  If X = 0 Or Y = 0 Or X + 1 > (Canvas1.Width \ CellSize)  Or Y + 1 > (Canvas1.Height \ CellSize) Then
+		  If X = 0 Or Y = 0 Or X + 1 > (RenderSurface.Width \ CellSize)  Or Y + 1 > (RenderSurface.Height \ CellSize) Then
 		    Return dead
 		  End If
 		  
@@ -468,7 +471,7 @@ End
 		    Repaint
 		    Modified = False
 		    RenderLock.Release
-		    Canvas1.Invalidate
+		    DoRender
 		  Else
 		    MsgBox("Unable to lock world!")
 		  End If
@@ -495,7 +498,7 @@ End
 		  sY = UBound(WorldArray, 2)
 		  For X As Integer = 0 To sX
 		    For Y As Integer = 0 To sY
-		      If WorldArray(X, Y) = alive Then 
+		      If WorldArray(X, Y) = alive Then
 		        wg.ForeColor = LifeColor
 		        wg.FillRect(X * CellSize, Y * CellSize, CellSize, CellSize)
 		      End If
@@ -504,13 +507,13 @@ End
 		  
 		  If ShowGrid.Value Then
 		    wg.ForeColor = RGB(LifeColor.Red, LifeColor.Green, LifeColor.Blue, &h99)
-		    Dim c As Integer = Max(Canvas1.Width, Canvas1.Height)
+		    Dim c As Integer = Max(RenderSurface.Width, RenderSurface.Height)
 		    For X As Integer = 0 To c Step CellSize
-		      wg.DrawLine(X, 0, X, Canvas1.Height)
+		      wg.DrawLine(X, 0, X, RenderSurface.Height)
 		    Next
 		    
 		    For Y As Integer = 0 To c Step CellSize
-		      wg.DrawLine(0, Y, Canvas1.Width, Y)
+		      wg.DrawLine(0, Y, RenderSurface.Width, Y)
 		    Next
 		  End If
 		  Timer1.Mode = Timer.ModeSingle
@@ -519,6 +522,7 @@ End
 
 	#tag Method, Flags = &h0
 		Sub Reset(Populate As Boolean = True, EmptyFirst As Boolean = False)
+		  RenderSurface.Init
 		  World = New Picture(Me.Width, Me.Height, 32)
 		  If EmptyFirst Then ReDim WorldArray(-1, -1)
 		  ReDim WorldArray(World.Width \ CellSize + 1, World.Height \ CellSize + 1)
@@ -626,43 +630,8 @@ End
 		  CellSize = Me.Value
 		  Reset(False, False)
 		  Repaint()
-		  Canvas1.Refresh(False)
+		  DoRender
 		End Sub
-	#tag EndEvent
-#tag EndEvents
-#tag Events Canvas1
-	#tag Event
-		Sub Paint(g As Graphics)
-		  If Not RenderLock.TrySignal Then
-		    g.DrawPicture(LastWorld, 0, 0)
-		  Else
-		    g.DrawPicture(World, 0, 0)
-		    RenderLock.Release
-		  End If
-		  
-		End Sub
-	#tag EndEvent
-	#tag Event
-		Sub Open()
-		  Reset()
-		End Sub
-	#tag EndEvent
-	#tag Event
-		Function MouseDown(X As Integer, Y As Integer) As Boolean
-		  Dim cellX, cellY As Integer
-		  
-		  cellX = X \ CellSize
-		  cellY = Y \ CellSize
-		  
-		  If WorldArray(cellX, cellY) = dead Then
-		    WorldArray(cellX, cellY) = alive
-		  Else
-		    WorldArray(cellX, cellY) = dead
-		  End If
-		  Modified = True
-		  Repaint()
-		  Me.Refresh(False)
-		End Function
 	#tag EndEvent
 #tag EndEvents
 #tag Events Timer1
@@ -699,7 +668,7 @@ End
 		    Repaint()
 		    RenderLock.Release
 		  End If
-		  Canvas1.Invalidate(True)
+		  DoRender
 		End Sub
 	#tag EndEvent
 #tag EndEvents
@@ -742,13 +711,31 @@ End
 		    
 		    WorldArray = newworld
 		    Repaint()
-		    Canvas1.Invalidate(True) ' In my defense, the Canvas1.Paint event will yield on the main thread until RenderLock is released.
+		    DoRender ' In my defense, the Canvas1.Paint event will yield on the main thread until RenderLock is released.
 		    
 		    Modified = True
 		    RenderLock.Release
 		    Me.Sleep(Slider2.Value)
 		    App.YieldToNextThread
 		  Loop
+		End Sub
+	#tag EndEvent
+#tag EndEvents
+#tag Events RenderSurface
+	#tag Event
+		Sub Open()
+		  Reset()
+		End Sub
+	#tag EndEvent
+	#tag Event
+		Sub Render(g as Graphics)
+		  If Not RenderLock.TrySignal Then
+		    g.DrawPicture(LastWorld, 0, 0)
+		  Else
+		    g.DrawPicture(World, 0, 0)
+		    RenderLock.Release
+		  End If
+		  
 		End Sub
 	#tag EndEvent
 #tag EndEvents
