@@ -745,13 +745,16 @@ End
 		  cellX = X \ CellSize
 		  cellY = Y \ CellSize
 		  
-		  If WorldArray(cellX, cellY) = dead Then
-		    WorldArray(cellX, cellY) = alive
-		  Else
-		    WorldArray(cellX, cellY) = dead
+		  If AcquireWorldLock() Then
+		    If WorldArray(cellX, cellY) = dead Then
+		      WorldArray(cellX, cellY) = alive
+		    Else
+		      WorldArray(cellX, cellY) = dead
+		    End If
+		    Modified = True
+		    Repaint()
+		    WorldLock.Release
 		  End If
-		  Modified = True
-		  Repaint()
 		  Me.Refresh(False)
 		End Function
 	#tag EndEvent
