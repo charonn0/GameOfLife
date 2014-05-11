@@ -1,8 +1,8 @@
 #tag Menu
 Begin Menu MenuBar1
-   Begin MenuItem FileMenu
+   Begin MenuItem WorldControl
       SpecialMenu = 0
-      Text = "&File"
+      Text = "World"
       Index = -2147483648
       AutoEnable = True
       Begin MenuItem OpenWorldFile
@@ -14,29 +14,21 @@ Begin Menu MenuBar1
          MenuModifier = True
          AutoEnable = True
       End
-      Begin MenuItem SaveWorldFile
+      Begin MenuItem SaveItem
          SpecialMenu = 0
-         Text = "Save As..."
+         Text = "Save"
          Index = -2147483648
          ShortcutKey = "S"
          Shortcut = "Cmd+S"
          MenuModifier = True
          AutoEnable = True
       End
-      Begin QuitMenuItem FileQuit
+      Begin MenuItem SaveWorldFile
          SpecialMenu = 0
-         Text = "#App.kFileQuit"
+         Text = "Save As..."
          Index = -2147483648
-         ShortcutKey = "#App.kFileQuitShortcut"
-         Shortcut = "#App.kFileQuitShortcut"
          AutoEnable = True
       End
-   End
-   Begin MenuItem WorldControl
-      SpecialMenu = 0
-      Text = "World"
-      Index = -2147483648
-      AutoEnable = True
       Begin MenuItem RunItem
          SpecialMenu = 0
          Text = "Run/Pause"

@@ -113,8 +113,8 @@ Begin Window Window1
       InitialParent   =   ""
       Left            =   658
       LockedInPosition=   False
-      Mode            =   2
-      Period          =   500
+      Mode            =   1
+      Period          =   1
       Scope           =   0
       TabPanelIndex   =   0
       Top             =   0
@@ -182,6 +182,29 @@ End
 		Function CancelClose(appQuitting as Boolean) As Boolean
 		  #pragma Unused appQuitting
 		  If RenderThread.State = Thread.Running Then RenderThread.Kill
+		  If Modified And WorldFile <> Nil Then
+		    Select Case MsgBox("Save changes to " + WorldFile.Name + "?", 3 + 48, "File modified")
+		    Case 2 ' cancel
+		      Return True
+		    Case 6 ' save
+		      Dim f As FolderItem = SpecialFolder.Temporary.Child(WorldFile.Name)
+		      Dim bs As BinaryStream = BinaryStream.Create(f, True)
+		      If SaveWorld(bs) Then
+		        bs.Close
+		        WorldFile.Delete
+		        f.MoveFileTo(WorldFile)
+		      ElseIf MsgBox("Unable to save world! Quit anyway?", 4 + 16, "Error") = 6 Then
+		        bs.Close
+		        Return False
+		      Else
+		        bs.Close
+		        Return True
+		      End If
+		      
+		    Else ' quit no save
+		      Return False
+		    End Select
+		  End If
 		End Function
 	#tag EndEvent
 
@@ -258,20 +281,13 @@ End
 	#tag EndMenuHandler
 
 	#tag MenuHandler
-		Function FileQuit() As Boolean Handles FileQuit.Action
-			Quit()
-			Return True
-			
-		End Function
-	#tag EndMenuHandler
-
-	#tag MenuHandler
 		Function OpenWorldFile() As Boolean Handles OpenWorldFile.Action
 			Dim f As FolderItem = GetOpenFolderItem(FileTypes1.All)
 			If f <> Nil Then
 			Dim bs As BinaryStream = BinaryStream.Open(f, True)
 			LoadWorld(bs)
 			bs.Close
+			WorldFile = f
 			End If
 			Return True
 			
@@ -309,6 +325,34 @@ End
 	#tag EndMenuHandler
 
 	#tag MenuHandler
+		Function SaveItem() As Boolean Handles SaveItem.Action
+			If AcquireRenderLock() Then
+			If WorldFile = Nil Or Not WorldFile.Exists Or WorldFile.Directory Then
+			Dim dlg As New SaveAsDialog
+			dlg.Filter = FileTypes1.All
+			dlg.SuggestedFileName = "New World"
+			dlg.Title = "Save GOL world"
+			If dlg.ShowModal <> Nil Then
+			If NthField(dlg.Result.Name, ".", CountFields(dlg.Result.Name, ".")) <> "gol" Then
+			dlg.Result.Name = dlg.Result.Name + ".gol"
+			End If
+			WorldFile = dlg.Result
+			Dim bs As BinaryStream = BinaryStream.Create(WorldFile, True)
+			Call SaveWorld(bs)
+			bs.Close
+			Repaint
+			Modified = False
+			End If
+			End If
+			RenderLock.Release
+			Else
+			MsgBox("Unable to lock world!")
+			End If
+			Return True
+		End Function
+	#tag EndMenuHandler
+
+	#tag MenuHandler
 		Function SaveWorldFile() As Boolean Handles SaveWorldFile.Action
 			Dim dlg As New SaveAsDialog
 			dlg.Filter = FileTypes1.All
@@ -321,9 +365,9 @@ End
 			Dim bs As BinaryStream = BinaryStream.Create(dlg.Result, True)
 			Call SaveWorld(bs)
 			bs.Close
+			WorldFile = dlg.Result
 			End If
 			Return True
-			
 		End Function
 	#tag EndMenuHandler
 
@@ -422,6 +466,7 @@ End
 		      End Select
 		    Wend
 		    Repaint
+		    Modified = False
 		    RenderLock.Release
 		    Canvas1.Invalidate
 		  Else
@@ -445,8 +490,11 @@ End
 		  Dim wg As Graphics = World.Graphics
 		  wg.ForeColor = DeadColor
 		  wg.FillRect(0, 0, wg.Width, wg.Height)
-		  For X As Integer = 0 To UBound(WorldArray, 1)
-		    For Y As Integer = 0 To UBound(WorldArray, 2)
+		  Dim sX, sY As Integer
+		  sX = UBound(WorldArray, 1)
+		  sY = UBound(WorldArray, 2)
+		  For X As Integer = 0 To sX
+		    For Y As Integer = 0 To sY
 		      If WorldArray(X, Y) = alive Then 
 		        wg.ForeColor = LifeColor
 		        wg.FillRect(X * CellSize, Y * CellSize, CellSize, CellSize)
@@ -465,6 +513,7 @@ End
 		      wg.DrawLine(0, Y, Canvas1.Width, Y)
 		    Next
 		  End If
+		  Timer1.Mode = Timer.ModeSingle
 		End Sub
 	#tag EndMethod
 
@@ -507,6 +556,7 @@ End
 		      WriteTo.Write("!")
 		    Next
 		    WriteTo.Write("EOF")
+		    Modified = False
 		    RenderLock.Release
 		  Else
 		    MsgBox("Unable to lock world!")
@@ -554,6 +604,10 @@ End
 
 	#tag Property, Flags = &h0
 		WorldArray(-1,-1) As Integer
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private WorldFile As FolderItem
 	#tag EndProperty
 
 
@@ -605,7 +659,7 @@ End
 		  Else
 		    WorldArray(cellX, cellY) = dead
 		  End If
-		  
+		  Modified = True
 		  Repaint()
 		  Me.Refresh(False)
 		End Function
@@ -614,12 +668,26 @@ End
 #tag Events Timer1
 	#tag Event
 		Sub Action()
-		  Self.Title = "Game of life - " + Format(GenCount, "###,###,###,###,###,###,##0") + " generations"' + Format(LifeCount, "###,###,###,###,###,###,##0") + " life forms"
-		  If App.LoadFile <> Nil And App.LoadFile.Exists And Not App.LoadFile.Directory Then
-		    Dim bs As BinaryStream = BinaryStream.Open(App.LoadFile)
-		    LoadWorld(bs)
-		    bs.Close
-		    App.LoadFile = Nil
+		  If AcquireRenderLock() Then
+		    Dim sx, sy As Integer
+		    sx = UBound(WorldArray, 1)
+		    sy = UBound(WorldArray, 2)
+		    Dim m As String
+		    If WorldFile <> Nil Then
+		      If Modified Then m = "*"
+		      m = " - " + WorldFile.Name + m
+		    End If
+		    Self.Title = "Game of life - " + Format(GenCount, "###,###,###,###,###,###,##0") + " generations (" _
+		    + Format(sx, "###,###,##0") + "x" + Format(sy, "###,###,##0") + ";" + _
+		    Format(LifeCount, "###,###,##0") + "/" + Format(sx * sy, "###,###,##0") + ")" + m
+		    If App.LoadFile <> Nil And App.LoadFile.Exists And Not App.LoadFile.Directory Then
+		      Dim bs As BinaryStream = BinaryStream.Open(App.LoadFile)
+		      LoadWorld(bs)
+		      bs.Close
+		      WorldFile = App.LoadFile
+		      App.LoadFile = Nil
+		    End If
+		    RenderLock.Release
 		  End If
 		End Sub
 	#tag EndEvent
