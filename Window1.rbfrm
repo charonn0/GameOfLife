@@ -288,9 +288,14 @@ End
 
 	#tag MenuHandler
 		Function Randomize() As Boolean Handles Randomize.Action
+			If AcquireWorldLock() Then
 			Reset()
 			Repaint()
+			WorldLock.Release
 			DoRender
+			Else
+			MsgBox(CurrentMethodName + ": Unable to lock world!")
+			End If
 			Return True
 			
 		End Function
@@ -340,7 +345,7 @@ End
 			bs.Close
 			WorldFile = f
 			Modified = False
-			If AcquireWorldLock() Then 
+			If AcquireWorldLock() Then
 			Repaint
 			WorldLock.Release
 			End If
@@ -360,10 +365,17 @@ End
 			If NthField(dlg.Result.Name, ".", CountFields(dlg.Result.Name, ".")) <> "gol" Then
 			dlg.Result.Name = dlg.Result.Name + ".gol"
 			End If
+			If dlg.Result <> Nil Then
 			Dim bs As BinaryStream = BinaryStream.Create(dlg.Result, True)
 			Call SaveWorld(bs)
 			bs.Close
 			WorldFile = dlg.Result
+			Modified = False
+			If AcquireWorldLock() Then
+			Repaint
+			WorldLock.Release
+			End If
+			End If
 			End If
 			Return True
 		End Function
