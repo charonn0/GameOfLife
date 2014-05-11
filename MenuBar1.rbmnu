@@ -65,6 +65,12 @@ Begin Menu MenuBar1
          MenuModifier = True
          AutoEnable = True
       End
+      Begin MenuItem ChangeRulesItem
+         SpecialMenu = 0
+         Text = "Set S/B rules..."
+         Index = -2147483648
+         AutoEnable = True
+      End
       Begin MenuItem SetColor
          SpecialMenu = 0
          Text = "Set color..."

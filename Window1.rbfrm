@@ -268,6 +268,36 @@ End
 
 
 	#tag MenuHandler
+		Function ChangeRulesItem() As Boolean Handles ChangeRulesItem.Action
+			Dim s(), b() As Integer
+			For i As Integer = 0 To UBound(BornRules)
+			b.Append(BornRules(i))
+			Next
+			For i As Integer = 0 To UBound(SurviveRules)
+			s.Append(SurviveRules(i))
+			Next
+			
+			Dim w As New RuleChange
+			Dim p As Pair = w.ChangeRules(b, s)
+			If p <> Nil Then
+			BornRules = p.Left
+			SurviveRules = p.Right
+			End If
+			
+			If AcquireWorldLock() Then
+			Repaint()
+			WorldLock.Release
+			Canvas1.Refresh(False)
+			Else
+			MsgBox(CurrentMethodName + ": Unable to lock world!")
+			End If
+			
+			Return True
+			
+		End Function
+	#tag EndMenuHandler
+
+	#tag MenuHandler
 		Function ClearWorld() As Boolean Handles ClearWorld.Action
 			If AcquireWorldLock() Then
 			Reset(False, True)
@@ -424,6 +454,10 @@ End
 
 	#tag Method, Flags = &h0
 		Function AcquireWorldLock(TryCount As Integer = 100) As Boolean
+		  If UBound(SurviveRules) = -1 Then SurviveRules = Array(2, 3)
+		  If UBound(BornRules) = -1 Then BornRules = Array(3)
+		  
+		  
 		  If WorldLock = Nil Then WorldLock = New Semaphore
 		  While Not WorldLock.TrySignal And TryCount > 0
 		    App.YieldToNextThread
@@ -442,21 +476,13 @@ End
 		  Dim neighborcount As Integer = WorldArray(X - 1, Y - 1) + WorldArray(X, Y - 1) + WorldArray(X + 1, Y - 1) + WorldArray(X + 1, Y) + _
 		  WorldArray(X + 1, Y + 1) + WorldArray(X, Y + 1) + WorldArray(X - 1, Y + 1) + WorldArray(X - 1, Y)
 		  
-		  Select Case neighborcount
-		  Case 0, 1, 4, 5, 6, 7, 8
-		    Return dead
-		    
-		  Case 2, 3
-		    If WorldArray(X, Y) = dead Then
-		      If neighborcount = 3 Then
-		        Return alive
-		      Else
-		        Return dead
-		      End If
-		    End If
-		    Return alive
-		    
-		  End Select
+		  Dim status As Integer = WorldArray(X, Y)
+		  If SurviveRules.IndexOf(neighborcount) = -1 And status = alive Then
+		    status = dead
+		  ElseIf BornRules.IndexOf(neighborcount) > -1 And status = dead Then
+		    status = alive
+		  End If
+		  Return status
 		  
 		Exception
 		  Quit
@@ -614,6 +640,10 @@ End
 
 
 	#tag Property, Flags = &h0
+		BornRules() As Integer
+	#tag EndProperty
+
+	#tag Property, Flags = &h0
 		CellSize As Integer = 10
 	#tag EndProperty
 
@@ -643,6 +673,10 @@ End
 
 	#tag Property, Flags = &h0
 		StepGen As Boolean
+	#tag EndProperty
+
+	#tag Property, Flags = &h0
+		SurviveRules() As Integer
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
