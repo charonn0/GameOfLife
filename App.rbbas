@@ -2,9 +2,14 @@
 Protected Class App
 Inherits Application
 	#tag Event
+		Sub Open()
+		  App.UseGDIPlus = True ' IDK why I have to do this in code
+		End Sub
+	#tag EndEvent
+
+	#tag Event
 		Sub OpenDocument(item As FolderItem)
 		  LoadFile = item
-		  App.UseGDIPlus = True
 		End Sub
 	#tag EndEvent
 
