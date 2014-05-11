@@ -298,9 +298,14 @@ End
 
 	#tag MenuHandler
 		Function Randomize() As Boolean Handles Randomize.Action
+			If AcquireWorldLock() Then
 			Reset()
 			Repaint()
+			WorldLock.Release
 			Canvas1.Refresh(False)
+			Else
+			MsgBox(CurrentMethodName + ": Unable to lock world!")
+			End If
 			Return True
 			
 		End Function
@@ -323,6 +328,29 @@ End
 			End If
 			Return True
 			
+		End Function
+	#tag EndMenuHandler
+
+	#tag MenuHandler
+		Function SaveAsItem() As Boolean Handles SaveAsItem.Action
+			If AcquireWorldLock() Then
+			Dim dlg As New SaveAsDialog
+			dlg.Filter = FileTypes1.All
+			dlg.SuggestedFileName = "New World"
+			dlg.Title = "Save GOL world"
+			If dlg.ShowModal <> Nil Then
+			If NthField(dlg.Result.Name, ".", CountFields(dlg.Result.Name, ".")) <> "gol" Then
+			dlg.Result.Name = dlg.Result.Name + ".gol"
+			End If
+			Dim bs As BinaryStream = BinaryStream.Create(dlg.Result, True)
+			Call SaveWorld(bs)
+			bs.Close
+			WorldFile = dlg.Result
+			End If
+			Else
+			MsgBox(CurrentMethodName + ": Unable to lock world!")
+			End If
+			Return True
 		End Function
 	#tag EndMenuHandler
 
@@ -356,25 +384,6 @@ End
 			End If
 			End If
 			
-			Return True
-		End Function
-	#tag EndMenuHandler
-
-	#tag MenuHandler
-		Function SaveWorldFile() As Boolean Handles SaveWorldFile.Action
-			Dim dlg As New SaveAsDialog
-			dlg.Filter = FileTypes1.All
-			dlg.SuggestedFileName = "New World"
-			dlg.Title = "Save GOL world"
-			If dlg.ShowModal <> Nil Then
-			If NthField(dlg.Result.Name, ".", CountFields(dlg.Result.Name, ".")) <> "gol" Then
-			dlg.Result.Name = dlg.Result.Name + ".gol"
-			End If
-			Dim bs As BinaryStream = BinaryStream.Create(dlg.Result, True)
-			Call SaveWorld(bs)
-			bs.Close
-			WorldFile = dlg.Result
-			End If
 			Return True
 		End Function
 	#tag EndMenuHandler

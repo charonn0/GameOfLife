@@ -23,7 +23,7 @@ Begin Menu MenuBar1
          MenuModifier = True
          AutoEnable = True
       End
-      Begin MenuItem SaveWorldFile
+      Begin MenuItem SaveAsItem
          SpecialMenu = 0
          Text = "Save As..."
          Index = -2147483648
