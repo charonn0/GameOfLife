@@ -626,7 +626,7 @@ End
 	#tag Event
 		Sub ValueChanged()
 		  CellSize = Me.Value
-		  Reset()
+		  Reset(False, False)
 		  Repaint()
 		  Canvas1.Refresh(False)
 		End Sub
