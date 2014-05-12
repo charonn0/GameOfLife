@@ -269,6 +269,7 @@ End
 
 	#tag MenuHandler
 		Function ChangeRulesItem() As Boolean Handles ChangeRulesItem.Action
+			If AcquireWorldLock() Then
 			Dim s(), b() As Integer
 			For i As Integer = 0 To UBound(BornRules)
 			b.Append(BornRules(i))
@@ -284,8 +285,6 @@ End
 			SurviveRules = p.Right
 			Modified = True
 			End If
-			
-			If AcquireWorldLock() Then
 			Repaint()
 			WorldLock.Release
 			Canvas1.Refresh(False)
@@ -702,6 +701,10 @@ End
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
+		ThreadSleep As Integer
+	#tag EndProperty
+
+	#tag Property, Flags = &h0
 		World As Picture
 	#tag EndProperty
 
@@ -779,6 +782,16 @@ End
 		  End If
 		  Me.Refresh(False)
 		End Function
+	#tag EndEvent
+#tag EndEvents
+#tag Events Slider2
+	#tag Event
+		Sub ValueChanged()
+		  If AcquireWorldLock() Then
+		    ThreadSleep = Me.Value
+		    WorldLock.Release
+		  End If
+		End Sub
 	#tag EndEvent
 #tag EndEvents
 #tag Events Timer1
@@ -860,7 +873,7 @@ End
 		      Modified = True
 		    Finally
 		      WorldLock.Release
-		      Me.Sleep(Slider2.Value)
+		      Me.Sleep(ThreadSleep)
 		      App.YieldToNextThread
 		      If StepGen Then
 		        StepGen = False
