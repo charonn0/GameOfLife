@@ -14,15 +14,6 @@ Begin Menu MenuBar1
          MenuModifier = True
          AutoEnable = True
       End
-      Begin MenuItem CloseItem
-         SpecialMenu = 0
-         Text = "Close"
-         Index = -2147483648
-         ShortcutKey = "Q"
-         Shortcut = "Cmd+Q"
-         MenuModifier = True
-         AutoEnable = True
-      End
       Begin MenuItem SaveItem
          SpecialMenu = 0
          Text = "Save"
@@ -32,7 +23,7 @@ Begin Menu MenuBar1
          MenuModifier = True
          AutoEnable = True
       End
-      Begin MenuItem SaveAsItem
+      Begin MenuItem SaveWorldFile
          SpecialMenu = 0
          Text = "Save As..."
          Index = -2147483648
@@ -72,12 +63,6 @@ Begin Menu MenuBar1
          ShortcutKey = "K"
          Shortcut = "Cmd+K"
          MenuModifier = True
-         AutoEnable = True
-      End
-      Begin MenuItem ChangeRulesItem
-         SpecialMenu = 0
-         Text = "Set S/B rules..."
-         Index = -2147483648
          AutoEnable = True
       End
       Begin MenuItem SetColor
