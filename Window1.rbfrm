@@ -541,7 +541,7 @@ End
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub LoadWorld(ReadFrom As Readable, ReadHeader As Boolean = True)
+		Sub LoadWorld(ReadFrom As Readable)
 		  If AcquireWorldLock() Then
 		    ReDim BornRules(-1)
 		    ReDim SurviveRules(-1)
@@ -549,41 +549,38 @@ End
 		    Dim x As Integer
 		    Dim rle As Boolean
 		    Dim sz As String
-		    If ReadHeader Then
-		      Select Case ReadFrom.Read(3)
-		      Case "GOL"
-		        rle = False
-		      Case "RLE"
-		        rle = True
-		      Else
-		        Raise New UnsupportedFormatException
-		      End Select
-		      While Not ReadFrom.EOF
-		        Dim char As String = ReadFrom.Read(1)
-		        If char = "#" Then
-		          Exit While
-		        Else
-		          sz = sz + char
-		        End If
-		      Wend
-		    End If
-		    If Not rle Then
-		      Dim rules As String = NthField(sz, "R", 2)
-		      sz = NthField(sz, "R", 1)
-		      Dim tmp() As String = Split(NthField(rules, "/", 1), "")
-		      For Each r As String In tmp
-		        SurviveRules.Append(Val(r))
-		      Next
-		      tmp = Split(NthField(rules, "/", 2), "")
-		      For Each r As String In tmp
-		        BornRules.Append(Val(r))
-		      Next
-		      Dim sX, sY As Integer
-		      sX = Val(NthField(sz, "*", 1))
-		      sY = Val(NthField(sz, "*", 2))
-		      If sX > UBound(WorldArray, 1) Then Slider1.Value = World.Width / sX
-		      Reset(False)
+		    Select Case ReadFrom.Read(3)
+		    Case "GOL"
+		      rle = False
+		    Case "RLE"
+		      rle = True
 		    Else
+		      Raise New UnsupportedFormatException
+		    End Select
+		    While Not ReadFrom.EOF
+		      Dim char As String = ReadFrom.Read(1)
+		      If char = "#" Then
+		        Exit While
+		      Else
+		        sz = sz + char
+		      End If
+		    Wend
+		    Dim rules As String = NthField(sz, "R", 2)
+		    sz = NthField(sz, "R", 1)
+		    Dim tmp() As String = Split(NthField(rules, "/", 1), "")
+		    For Each r As String In tmp
+		      SurviveRules.Append(Val(r))
+		    Next
+		    tmp = Split(NthField(rules, "/", 2), "")
+		    For Each r As String In tmp
+		      BornRules.Append(Val(r))
+		    Next
+		    Dim sX, sY As Integer
+		    sX = Val(NthField(sz, "*", 1))
+		    sY = Val(NthField(sz, "*", 2))
+		    If sX > UBound(WorldArray, 1) Then Slider1.Value = World.Width / sX
+		    Reset(False)
+		    If rle Then
 		      Dim s As String
 		      While Not ReadFrom.EOF
 		        s = s + ReadFrom.Read(1)
