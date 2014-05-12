@@ -159,6 +159,33 @@ Begin Window Window1
       Top             =   0
       Visible         =   True
       Width           =   600
+      Begin Canvas Clickable
+         AcceptFocus     =   ""
+         AcceptTabs      =   ""
+         AutoDeactivate  =   True
+         Backdrop        =   ""
+         DoubleBuffer    =   False
+         Enabled         =   True
+         EraseBackground =   True
+         Height          =   600
+         HelpTag         =   ""
+         Index           =   -2147483648
+         InitialParent   =   "RenderSurface"
+         Left            =   0
+         LockBottom      =   True
+         LockedInPosition=   False
+         LockLeft        =   True
+         LockRight       =   True
+         LockTop         =   True
+         Scope           =   0
+         TabIndex        =   0
+         TabPanelIndex   =   0
+         TabStop         =   True
+         Top             =   0
+         UseFocusRing    =   True
+         Visible         =   True
+         Width           =   600
+      End
    End
 End
 #tag EndWindow
@@ -992,5 +1019,27 @@ End
 		  End If
 		  
 		End Sub
+	#tag EndEvent
+#tag EndEvents
+#tag Events Clickable
+	#tag Event
+		Function MouseDown(X As Integer, Y As Integer) As Boolean
+		  Dim cellX, cellY As Integer
+		  
+		  cellX = X \ CellSize
+		  cellY = Y \ CellSize
+		  
+		  If AcquireWorldLock() Then
+		    If WorldArray(cellX, cellY) = dead Then
+		      WorldArray(cellX, cellY) = alive
+		    Else
+		      WorldArray(cellX, cellY) = dead
+		    End If
+		    Modified = True
+		    Repaint()
+		    WorldLock.Release
+		  End If
+		  DoRender
+		End Function
 	#tag EndEvent
 #tag EndEvents
