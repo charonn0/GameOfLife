@@ -8,4 +8,13 @@
 		Name=GOL saved world
 	#tag EndFileType
 
+	#tag FileType
+		CodeName=RLEEncodedGOLSavedWorld
+		Extension=rle
+		Flags=&h0
+		MacCreator=
+		MacType=
+		Name=RLE Encoded GOL saved world
+	#tag EndFileType
+
 #tag EndFileTypeSet
