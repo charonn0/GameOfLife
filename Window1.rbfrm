@@ -211,6 +211,13 @@ End
 	#tag EndEvent
 
 	#tag Event
+		Sub EnableMenuItems()
+		  Dim mnu As MenuItem = Self.MenuBar.Item(0).Item(1)
+		  mnu.Enabled = WorldFile <> Nil
+		End Sub
+	#tag EndEvent
+
+	#tag Event
 		Function KeyDown(Key As String) As Boolean
 		  If Asc(key) = &hD2 Then
 		    Self.FullScreen = Not Self.FullScreen
@@ -307,6 +314,52 @@ End
 			Else
 			MsgBox(CurrentMethodName + ": Unable to lock world!")
 			End If
+			Return True
+			
+		End Function
+	#tag EndMenuHandler
+
+	#tag MenuHandler
+		Function CloseItem() As Boolean Handles CloseItem.Action
+			Dim killed As Boolean
+			If Not AcquireWorldLock() Then
+			RenderThread.Kill
+			killed = True
+			End If
+			If Modified Then
+			Select Case MsgBox("Save changes to " + WorldFile.Name + "?", 3 + 48, "File modified")
+			Case 2 
+			If killed Then
+			RenderThread.Run
+			Else
+			WorldLock.Release
+			End If
+			Return True
+			Case 6 ' save
+			Dim f As FolderItem = SpecialFolder.Temporary.Child(WorldFile.Name)
+			Dim bs As BinaryStream = BinaryStream.Create(f, True)
+			If SaveWorld(bs) Then
+			bs.Close
+			WorldFile.Delete
+			f.MoveFileTo(WorldFile)
+			ElseIf MsgBox("Unable to save world! Quit anyway?", 4 + 16, "Error") = 6 Then
+			bs.Close
+			Else
+			bs.Close
+			End If
+			End Select
+			Reset(False, True)
+			Modified = False
+			WorldFile = Nil
+			Repaint()
+			Canvas1.Invalidate
+			End If
+			If killed Then
+			RenderThread.Run
+			Else
+			WorldLock.Release
+			End If
+			
 			Return True
 			
 		End Function

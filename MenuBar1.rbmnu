@@ -14,6 +14,15 @@ Begin Menu MenuBar1
          MenuModifier = True
          AutoEnable = True
       End
+      Begin MenuItem CloseItem
+         SpecialMenu = 0
+         Text = "Close"
+         Index = -2147483648
+         ShortcutKey = "Q"
+         Shortcut = "Cmd+Q"
+         MenuModifier = True
+         AutoEnable = True
+      End
       Begin MenuItem SaveItem
          SpecialMenu = 0
          Text = "Save"
