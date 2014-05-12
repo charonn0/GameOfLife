@@ -605,7 +605,7 @@ End
 		        X = X + 1
 		        Y = 0
 		      Else
-		        'If char = "E" And ReadFrom.Read(2) = "OF" Then 
+		        'If char = "E" And ReadFrom.Read(2) = "OF" Then
 		        Exit While
 		        'Raise New UnsupportedFormatException
 		      End Select
@@ -630,6 +630,28 @@ End
 		End Sub
 	#tag EndMethod
 
+	#tag Method, Flags = &h0
+		Function Overlay() As Picture
+		  If obuff = Nil Or obuff.Width <> Canvas1.Width Or obuff.Height <> Canvas1.Height Then
+		    obuff = New Picture(Canvas1.Width, Canvas1.Height)
+		    obuff.Graphics.ClearRect(0, 0, obuff.Width, obuff.Height)
+		    Dim g As Graphics = obuff.Graphics
+		    If ShowGrid.Value Then
+		      g.ForeColor = RGB(LifeColor.Red, LifeColor.Green, LifeColor.Blue, &h99)
+		      Dim c As Integer = Max(g.Width, g.Height)
+		      For X As Integer = 0 To c Step CellSize
+		        g.DrawLine(X, 0, X, g.Height)
+		      Next
+		      
+		      For Y As Integer = 0 To c Step CellSize
+		        g.DrawLine(0, Y, g.Width, Y)
+		      Next
+		    End If
+		  End If
+		  Return obuff
+		End Function
+	#tag EndMethod
+
 	#tag Method, Flags = &h21
 		Private Sub Repaint()
 		  If WorldLock.TrySignal Then
@@ -650,18 +672,6 @@ End
 		      End If
 		    Next
 		  Next
-		  
-		  If ShowGrid.Value Then
-		    wg.ForeColor = RGB(LifeColor.Red, LifeColor.Green, LifeColor.Blue, &h99)
-		    Dim c As Integer = Max(Canvas1.Width, Canvas1.Height)
-		    For X As Integer = 0 To c Step CellSize
-		      wg.DrawLine(X, 0, X, Canvas1.Height)
-		    Next
-		    
-		    For Y As Integer = 0 To c Step CellSize
-		      wg.DrawLine(0, Y, Canvas1.Width, Y)
-		    Next
-		  End If
 		  Timer1.Mode = Timer.ModeSingle
 		  
 		Exception
@@ -671,6 +681,7 @@ End
 
 	#tag Method, Flags = &h0
 		Sub Reset(Populate As Boolean = True, EmptyFirst As Boolean = False)
+		  obuff = Nil
 		  If WorldLock.TrySignal Then
 		    Raise New IllegalLockingException ' callers must call AcquireWorldLock first!
 		  End If
@@ -705,7 +716,7 @@ End
 		      rCount = rCount + m
 		    Case Else
 		      If Val(rCount) > 0Then
-		        For z As Integer = 1 To Val(rCount) 
+		        For z As Integer = 1 To Val(rCount)
 		          outP = outP + m
 		        Next
 		        rCount = ""
@@ -831,6 +842,10 @@ End
 		Modified As Boolean
 	#tag EndProperty
 
+	#tag Property, Flags = &h21
+		Private obuff As Picture
+	#tag EndProperty
+
 	#tag Property, Flags = &h0
 		StepGen As Boolean
 	#tag EndProperty
@@ -895,6 +910,7 @@ End
 		    g.DrawPicture(World, 0, 0)
 		    WorldLock.Release
 		  End If
+		  g.DrawPicture(Overlay, 0, 0)
 		  
 		End Sub
 	#tag EndEvent
@@ -971,6 +987,7 @@ End
 	#tag Event
 		Sub Action()
 		  If AcquireWorldLock() Then
+		    obuff = Nil
 		    Repaint()
 		    WorldLock.Release
 		  End If
