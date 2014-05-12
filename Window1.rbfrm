@@ -542,6 +542,7 @@ End
 
 	#tag Method, Flags = &h0
 		Sub LoadWorld(ReadFrom As Readable)
+		  pleasewait.Show
 		  If AcquireWorldLock() Then
 		    ReDim BornRules(-1)
 		    ReDim SurviveRules(-1)
@@ -592,13 +593,13 @@ End
 		    While Not ReadFrom.EOF
 		      Dim char As String = ReadFrom.Read(1)
 		      Select Case char
-		      Case "X"
+		      Case "X", "o"
 		        WorldArray(X, Y) = alive
 		        Y = Y + 1
-		      Case "-"
+		      Case "-", "b"
 		        WorldArray(X, Y) = dead
 		        Y = Y + 1
-		      Case "!"
+		      Case "!", "$"
 		        X = X + 1
 		        Y = 0
 		      Else
@@ -624,6 +625,8 @@ End
 		  Call MsgBox("The file is corrupt.", 16, "Invalid data")
 		  WorldLock.Release
 		  
+		Finally
+		  pleasewait.Close
 		End Sub
 	#tag EndMethod
 
@@ -712,7 +715,7 @@ End
 		    Case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
 		      rCount = rCount + m
 		    Case Else
-		      If Val(rCount) > 0Then
+		      If Val(rCount) > 0 Then
 		        For z As Integer = 1 To Val(rCount)
 		          outP = outP + m
 		        Next
@@ -754,6 +757,7 @@ End
 
 	#tag Method, Flags = &h0
 		Function SaveWorld(WriteTo As Writeable, RLE As Boolean) As Boolean
+		  pleasewait.Show
 		  If AcquireWorldLock(100000) Then
 		    Dim X, Y As Integer
 		    X = UBound(WorldArray, 1)
@@ -802,6 +806,7 @@ End
 		  Else
 		    MsgBox(CurrentMethodName + ": Unable to lock world!")
 		  End If
+		  pleasewait.Close
 		  Return True
 		End Function
 	#tag EndMethod
