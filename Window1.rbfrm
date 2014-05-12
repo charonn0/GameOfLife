@@ -282,6 +282,7 @@ End
 			If p <> Nil Then
 			BornRules = p.Left
 			SurviveRules = p.Right
+			Modified = True
 			End If
 			
 			If AcquireWorldLock() Then
@@ -492,6 +493,8 @@ End
 	#tag Method, Flags = &h0
 		Sub LoadWorld(ReadFrom As Readable)
 		  If AcquireWorldLock() Then
+		    ReDim BornRules(-1)
+		    ReDim SurviveRules(-1)
 		    Dim y As Integer
 		    Dim x As Integer
 		    If ReadFrom.Read(3) <> "GOL" Then Raise New UnsupportedFormatException
@@ -504,6 +507,16 @@ End
 		        sz = sz + char
 		      End If
 		    Wend
+		    Dim rules As String = NthField(sz, "R", 2)
+		    sz = NthField(sz, "R", 1)
+		    Dim tmp() As String = Split(NthField(rules, "/", 1), "")
+		    For Each r As String In tmp
+		      SurviveRules.Append(Val(r))
+		    Next
+		    tmp = Split(NthField(rules, "/", 2), "")
+		    For Each r As String In tmp
+		      BornRules.Append(Val(r))
+		    Next
 		    Dim sX, sY As Integer
 		    sX = Val(NthField(sz, "*", 1))
 		    sY = Val(NthField(sz, "*", 2))
@@ -617,7 +630,16 @@ End
 		    Dim X, Y As Integer
 		    X = UBound(WorldArray, 1)
 		    Y = UBound(WorldArray, 2)
-		    WriteTo.Write("GOL" + Format(X + 1, "#########0") + "*" + Format(Y + 1, "#########0") + "#")
+		    Dim r As String
+		    For i As Integer = 0 To UBound(SurviveRules)
+		      r = r + Str(SurviveRules(i))
+		    Next
+		    r = r + "/"
+		    For i As Integer = 0 To UBound(BornRules)
+		      r = r + Str(BornRules(i))
+		    Next
+		    
+		    WriteTo.Write("GOL" + Format(X + 1, "#########0") + "*" + Format(Y + 1, "#########0") + "R" + r + "#")
 		    For i As Integer = 0 To X
 		      For j As Integer = 0 To Y
 		        If WorldArray(i, j) = alive Then
