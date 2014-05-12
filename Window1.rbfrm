@@ -191,7 +191,7 @@ End
 		    Case 6 ' save
 		      Dim f As FolderItem = SpecialFolder.Temporary.Child(WorldFile.Name)
 		      Dim bs As BinaryStream = BinaryStream.Create(f, True)
-		      If SaveWorld(bs) Then
+		      If SaveWorld(bs, WorldFileRLE) Then
 		        bs.Close
 		        WorldFile.Delete
 		        f.MoveFileTo(WorldFile)
@@ -328,7 +328,7 @@ End
 			Case 6 ' save
 			Dim f As FolderItem = SpecialFolder.Temporary.Child(WorldFile.Name)
 			Dim bs As BinaryStream = BinaryStream.Create(f, True)
-			If SaveWorld(bs) Then
+			If SaveWorld(bs, WorldFileRLE) Then
 			bs.Close
 			WorldFile.Delete
 			f.MoveFileTo(WorldFile)
@@ -406,22 +406,21 @@ End
 
 	#tag MenuHandler
 		Function SaveAsItem() As Boolean Handles SaveAsItem.Action
-			If AcquireWorldLock() Then
 			Dim dlg As New SaveAsDialog
 			dlg.Filter = FileTypes1.All
-			dlg.SuggestedFileName = "New World"
+			dlg.SuggestedFileName = "New World.gol"
 			dlg.Title = "Save GOL world"
 			If dlg.ShowModal <> Nil Then
-			If NthField(dlg.Result.Name, ".", CountFields(dlg.Result.Name, ".")) <> "gol" Then
-			dlg.Result.Name = dlg.Result.Name + ".gol"
-			End If
+			WorldFileRLE = NthField(dlg.Result.Name, ".", CountFields(dlg.Result.Name, ".")) <> "gol"
 			Dim bs As BinaryStream = BinaryStream.Create(dlg.Result, True)
-			Call SaveWorld(bs)
+			Call SaveWorld(bs, WorldFileRLE)
 			bs.Close
 			WorldFile = dlg.Result
+			Modified = False
+			If AcquireWorldLock() Then
+			Repaint
+			WorldLock.Release
 			End If
-			Else
-			MsgBox(CurrentMethodName + ": Unable to lock world!")
 			End If
 			Return True
 		End Function
@@ -438,16 +437,14 @@ End
 			dlg.SuggestedFileName = "New World"
 			dlg.Title = "Save GOL world"
 			If dlg.ShowModal <> Nil Then
-			If NthField(dlg.Result.Name, ".", CountFields(dlg.Result.Name, ".")) <> "gol" Then
-			dlg.Result.Name = dlg.Result.Name + ".gol"
-			End If
+			WorldFileRLE = NthField(dlg.Result.Name, ".", CountFields(dlg.Result.Name, ".")) <> "gol"
 			f = dlg.Result
 			End If
 			End If
 			
 			If f <> Nil Then
 			Dim bs As BinaryStream = BinaryStream.Create(f, True)
-			Call SaveWorld(bs)
+			Call SaveWorld(bs, WorldFileRLE)
 			bs.Close
 			WorldFile = f
 			Modified = False
@@ -497,10 +494,10 @@ End
 		Function AcquireWorldLock(TryCount As Integer = 100) As Boolean
 		  If UBound(SurviveRules) = -1 Then SurviveRules = Array(2, 3)
 		  If UBound(BornRules) = -1 Then BornRules = Array(3)
-		  
+		  Dim inf As Boolean = (TryCount = -1)
 		  
 		  If WorldLock = Nil Then WorldLock = New Semaphore
-		  While Not WorldLock.TrySignal And TryCount > 0
+		  While Not WorldLock.TrySignal And (TryCount > 0 Or inf)
 		    App.YieldToNextThread
 		    TryCount = TryCount - 1
 		  Wend
@@ -538,38 +535,56 @@ End
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub LoadWorld(ReadFrom As Readable)
+		Sub LoadWorld(ReadFrom As Readable, ReadHeader As Boolean = True)
 		  If AcquireWorldLock() Then
 		    ReDim BornRules(-1)
 		    ReDim SurviveRules(-1)
 		    Dim y As Integer
 		    Dim x As Integer
-		    If ReadFrom.Read(3) <> "GOL" Then Raise New UnsupportedFormatException
+		    Dim rle As Boolean
 		    Dim sz As String
-		    While Not ReadFrom.EOF
-		      Dim char As String = ReadFrom.Read(1)
-		      If char = "#" Then
-		        Exit While
+		    If ReadHeader Then
+		      Select Case ReadFrom.Read(3)
+		      Case "GOL"
+		        rle = False
+		      Case "RLE"
+		        rle = True
 		      Else
-		        sz = sz + char
-		      End If
-		    Wend
-		    Dim rules As String = NthField(sz, "R", 2)
-		    sz = NthField(sz, "R", 1)
-		    Dim tmp() As String = Split(NthField(rules, "/", 1), "")
-		    For Each r As String In tmp
-		      SurviveRules.Append(Val(r))
-		    Next
-		    tmp = Split(NthField(rules, "/", 2), "")
-		    For Each r As String In tmp
-		      BornRules.Append(Val(r))
-		    Next
-		    Dim sX, sY As Integer
-		    sX = Val(NthField(sz, "*", 1))
-		    sY = Val(NthField(sz, "*", 2))
-		    If sX > UBound(WorldArray, 1) Then Slider1.Value = World.Width / sX
-		    Reset(False)
-		    
+		        Raise New UnsupportedFormatException
+		      End Select
+		      While Not ReadFrom.EOF
+		        Dim char As String = ReadFrom.Read(1)
+		        If char = "#" Then
+		          Exit While
+		        Else
+		          sz = sz + char
+		        End If
+		      Wend
+		    End If
+		    If Not rle Then
+		      Dim rules As String = NthField(sz, "R", 2)
+		      sz = NthField(sz, "R", 1)
+		      Dim tmp() As String = Split(NthField(rules, "/", 1), "")
+		      For Each r As String In tmp
+		        SurviveRules.Append(Val(r))
+		      Next
+		      tmp = Split(NthField(rules, "/", 2), "")
+		      For Each r As String In tmp
+		        BornRules.Append(Val(r))
+		      Next
+		      Dim sX, sY As Integer
+		      sX = Val(NthField(sz, "*", 1))
+		      sY = Val(NthField(sz, "*", 2))
+		      If sX > UBound(WorldArray, 1) Then Slider1.Value = World.Width / sX
+		      Reset(False)
+		    Else
+		      Dim s As String
+		      While Not ReadFrom.EOF
+		        s = s + ReadFrom.Read(1)
+		      Wend
+		      s = RLDecode(s)
+		      ReadFrom = New BinaryStream(s)
+		    End If
 		    
 		    While Not ReadFrom.EOF
 		      Dim char As String = ReadFrom.Read(1)
@@ -584,10 +599,12 @@ End
 		        X = X + 1
 		        Y = 0
 		      Else
-		        If char = "E" And ReadFrom.Read(2) = "OF" Then Exit While
-		        Raise New UnsupportedFormatException
+		        'If char = "E" And ReadFrom.Read(2) = "OF" Then
+		        Exit While
+		        'Raise New UnsupportedFormatException
 		      End Select
 		    Wend
+		    
 		    Repaint
 		    Modified = False
 		    WorldLock.Release
@@ -671,9 +688,59 @@ End
 		End Sub
 	#tag EndMethod
 
+	#tag Method, Flags = &h21
+		Private Function RLDecode(Data As MemoryBlock) As String
+		  Dim Loop0 As Integer, rCount As String, outP As String, m As String
+		  
+		  For Loop0 = 0 To Data.Size - 1
+		    m = Data.StringValue(Loop0, 1)
+		    Select Case m
+		    Case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
+		      rCount = rCount + m
+		    Case Else
+		      If Val(rCount) > 0Then
+		        For z As Integer = 1 To Val(rCount)
+		          outP = outP + m
+		        Next
+		        rCount = ""
+		      Else
+		        outP = outP + m
+		      End If
+		    End Select
+		  Next
+		  
+		  Return outp
+		END FUNCTION
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Function RLEncode(Data As MemoryBlock) As String
+		  Dim tmp1, tmp2, outP As String
+		  Dim Loop0, rCount As Integer
+		  tmp1 = Data.StringValue(0, 1)
+		  tmp2 = tmp1
+		  rCount = 1
+		  For Loop0 = 1 To Data.Size - 1
+		    tmp1 = Data.StringValue(Loop0, 1)
+		    If tmp1 <> tmp2 Then
+		      tmp2 = Str(rCount).Trim + tmp2
+		      outP = outP + tmp2
+		      tmp2 = tmp1
+		      rCount = 1
+		    Else
+		      rCount = rCount + 1
+		    End If
+		  Next
+		  
+		  outP = outP + Str(rCount).Trim
+		  outP = outP + tmp2
+		  Return outP
+		END FUNCTION
+	#tag EndMethod
+
 	#tag Method, Flags = &h0
-		Function SaveWorld(WriteTo As Writeable) As Boolean
-		  If AcquireWorldLock() Then
+		Function SaveWorld(WriteTo As Writeable, RLE As Boolean) As Boolean
+		  If AcquireWorldLock(100000) Then
 		    Dim X, Y As Integer
 		    X = UBound(WorldArray, 1)
 		    Y = UBound(WorldArray, 2)
@@ -685,19 +752,37 @@ End
 		    For i As Integer = 0 To UBound(BornRules)
 		      r = r + Str(BornRules(i))
 		    Next
-		    
-		    WriteTo.Write("GOL" + Format(X + 1, "#########0") + "*" + Format(Y + 1, "#########0") + "R" + r + "#")
-		    For i As Integer = 0 To X
-		      For j As Integer = 0 To Y
-		        If WorldArray(i, j) = alive Then
-		          WriteTo.Write("X")
-		        ElseIf WorldArray(i, j) = dead Then
-		          WriteTo.Write("-")
-		        End If
+		    If Not RLE Then
+		      WriteTo.Write("GOL" + Format(X + 1, "#########0") + "*" + Format(Y + 1, "#########0") + "R" + r + "#")
+		      For i As Integer = 0 To X
+		        For j As Integer = 0 To Y
+		          If WorldArray(i, j) = alive Then
+		            WriteTo.Write("X")
+		          ElseIf WorldArray(i, j) = dead Then
+		            WriteTo.Write("-")
+		          End If
+		        Next
+		        WriteTo.Write("!")
 		      Next
-		      WriteTo.Write("!")
-		    Next
-		    WriteTo.Write("EOF")
+		      WriteTo.Write("EOF")
+		    Else
+		      WriteTo.Write("RLE" + Format(X + 1, "#########0") + "*" + Format(Y + 1, "#########0") + "R" + r + "#")
+		      Dim data As New MemoryBlock(UBound(WorldArray, 1) * UBound(WorldArray, 2))
+		      Dim w As New BinaryStream(data)
+		      For i As Integer = 0 To X
+		        For j As Integer = 0 To Y
+		          If WorldArray(i, j) = alive Then
+		            w.Write("X")
+		          ElseIf WorldArray(i, j) = dead Then
+		            w.Write("-")
+		          End If
+		        Next
+		        w.Write("!")
+		      Next
+		      w.Close
+		      Data = RLEncode(Data)
+		      WriteTo.Write(data)
+		    End If
 		    Modified = False
 		    WorldLock.Release
 		  Else
@@ -764,6 +849,10 @@ End
 		Private WorldFile As FolderItem
 	#tag EndProperty
 
+	#tag Property, Flags = &h0
+		WorldFileRLE As Boolean
+	#tag EndProperty
+
 	#tag Property, Flags = &h21
 		Private WorldLock As Semaphore
 	#tag EndProperty
@@ -807,13 +896,16 @@ End
 		    + Format(sx, "###,###,##0") + "x" + Format(sy, "###,###,##0") + ";" + _
 		    Format(LifeCount, "###,###,##0") + "/" + Format(sx * sy, "###,###,##0") + ")" + m
 		    If App.LoadFile <> Nil And App.LoadFile.Exists And Not App.LoadFile.Directory Then
+		      Reset(False, True)
+		      WorldLock.Release
 		      Dim bs As BinaryStream = BinaryStream.Open(App.LoadFile)
 		      LoadWorld(bs)
 		      bs.Close
 		      WorldFile = App.LoadFile
 		      App.LoadFile = Nil
+		    Else
+		      WorldLock.Release
 		    End If
-		    WorldLock.Release
 		  End If
 		End Sub
 	#tag EndEvent
