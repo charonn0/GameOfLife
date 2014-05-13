@@ -1,8 +1,8 @@
 #tag Menu
 Begin Menu MenuBar1
-   Begin MenuItem WorldControl
+   Begin MenuItem FileMenu
       SpecialMenu = 0
-      Text = "World"
+      Text = "File"
       Index = -2147483648
       AutoEnable = True
       Begin MenuItem OpenWorldFile
@@ -38,6 +38,48 @@ Begin Menu MenuBar1
          Index = -2147483648
          AutoEnable = True
       End
+   End
+   Begin MenuItem EditMenu
+      SpecialMenu = 0
+      Text = "Edit"
+      Index = -2147483648
+      AutoEnable = True
+      Begin MenuItem ClearWorld
+         SpecialMenu = 0
+         Text = "Clear"
+         Index = -2147483648
+         ShortcutKey = "K"
+         Shortcut = "Cmd+K"
+         MenuModifier = True
+         AutoEnable = True
+      End
+      Begin MenuItem Randomize
+         SpecialMenu = 0
+         Text = "Randomize"
+         Index = -2147483648
+         ShortcutKey = "W"
+         Shortcut = "Cmd+W"
+         MenuModifier = True
+         AutoEnable = True
+      End
+      Begin MenuItem ChangeRulesItem
+         SpecialMenu = 0
+         Text = "Set rules..."
+         Index = -2147483648
+         AutoEnable = True
+      End
+      Begin MenuItem SetColor
+         SpecialMenu = 0
+         Text = "Set color..."
+         Index = -2147483648
+         AutoEnable = True
+      End
+   End
+   Begin MenuItem WorldControl
+      SpecialMenu = 0
+      Text = "World"
+      Index = -2147483648
+      AutoEnable = True
       Begin MenuItem RunItem
          SpecialMenu = 0
          Text = "Run/Pause"
@@ -56,34 +98,22 @@ Begin Menu MenuBar1
          MenuModifier = True
          AutoEnable = True
       End
-      Begin MenuItem Randomize
+      Begin MenuItem IncreaseSize
          SpecialMenu = 0
-         Text = "Randomize"
+         Text = "Increase cell size"
          Index = -2147483648
-         ShortcutKey = "W"
-         Shortcut = "Cmd+W"
+         ShortcutKey = "]"
+         Shortcut = "Cmd+]"
          MenuModifier = True
          AutoEnable = True
       End
-      Begin MenuItem ClearWorld
+      Begin MenuItem DecreaseSize
          SpecialMenu = 0
-         Text = "Clear"
+         Text = "Decrease cell size"
          Index = -2147483648
-         ShortcutKey = "K"
-         Shortcut = "Cmd+K"
+         ShortcutKey = "["
+         Shortcut = "Cmd+["
          MenuModifier = True
-         AutoEnable = True
-      End
-      Begin MenuItem ChangeRulesItem
-         SpecialMenu = 0
-         Text = "Set S/B rules..."
-         Index = -2147483648
-         AutoEnable = True
-      End
-      Begin MenuItem SetColor
-         SpecialMenu = 0
-         Text = "Set color..."
-         Index = -2147483648
          AutoEnable = True
       End
    End

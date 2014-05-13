@@ -24,37 +24,9 @@ Begin Window Window1
    Title           =   "Game Of Life"
    Visible         =   True
    Width           =   600
-   Begin Slider Slider1
-      AutoDeactivate  =   True
-      Enabled         =   True
-      Height          =   23
-      HelpTag         =   ""
-      Index           =   -2147483648
-      InitialParent   =   ""
-      Left            =   0
-      LineStep        =   1
-      LiveScroll      =   ""
-      LockBottom      =   True
-      LockedInPosition=   False
-      LockLeft        =   True
-      LockRight       =   ""
-      LockTop         =   False
-      Maximum         =   25
-      Minimum         =   1
-      PageStep        =   1
-      Scope           =   0
-      TabIndex        =   6
-      TabPanelIndex   =   0
-      TabStop         =   True
-      TickStyle       =   0
-      Top             =   601
-      Value           =   5
-      Visible         =   True
-      Width           =   105
-   End
    Begin Canvas Canvas1
-      AcceptFocus     =   ""
-      AcceptTabs      =   ""
+      AcceptFocus     =   True
+      AcceptTabs      =   True
       AutoDeactivate  =   True
       Backdrop        =   ""
       DoubleBuffer    =   True
@@ -71,41 +43,13 @@ Begin Window Window1
       LockRight       =   True
       LockTop         =   True
       Scope           =   0
-      TabIndex        =   8
+      TabIndex        =   0
       TabPanelIndex   =   0
       TabStop         =   True
       Top             =   0
       UseFocusRing    =   True
       Visible         =   True
       Width           =   600
-   End
-   Begin Slider Slider2
-      AutoDeactivate  =   True
-      Enabled         =   True
-      Height          =   23
-      HelpTag         =   ""
-      Index           =   -2147483648
-      InitialParent   =   ""
-      Left            =   117
-      LineStep        =   1
-      LiveScroll      =   ""
-      LockBottom      =   True
-      LockedInPosition=   False
-      LockLeft        =   True
-      LockRight       =   ""
-      LockTop         =   False
-      Maximum         =   1000
-      Minimum         =   10
-      PageStep        =   20
-      Scope           =   0
-      TabIndex        =   9
-      TabPanelIndex   =   0
-      TabStop         =   True
-      TickStyle       =   0
-      Top             =   601
-      Value           =   0
-      Visible         =   True
-      Width           =   105
    End
    Begin Timer Timer1
       Height          =   32
@@ -120,38 +64,6 @@ Begin Window Window1
       Top             =   0
       Width           =   32
    End
-   Begin CheckBox ShowGrid
-      AutoDeactivate  =   True
-      Bold            =   ""
-      Caption         =   "Show grid"
-      DataField       =   ""
-      DataSource      =   ""
-      Enabled         =   True
-      Height          =   20
-      HelpTag         =   ""
-      Index           =   -2147483648
-      InitialParent   =   ""
-      Italic          =   ""
-      Left            =   234
-      LockBottom      =   True
-      LockedInPosition=   False
-      LockLeft        =   True
-      LockRight       =   ""
-      LockTop         =   False
-      Scope           =   0
-      State           =   1
-      TabIndex        =   10
-      TabPanelIndex   =   0
-      TabStop         =   True
-      TextFont        =   "System"
-      TextSize        =   0
-      TextUnit        =   0
-      Top             =   601
-      Underline       =   ""
-      Value           =   True
-      Visible         =   True
-      Width           =   100
-   End
    Begin Thread RenderThread
       Height          =   32
       Index           =   -2147483648
@@ -163,6 +75,105 @@ Begin Window Window1
       TabPanelIndex   =   0
       Top             =   44
       Width           =   32
+   End
+   Begin Label Status
+      AutoDeactivate  =   True
+      Bold            =   ""
+      DataField       =   ""
+      DataSource      =   ""
+      Enabled         =   True
+      Height          =   21
+      HelpTag         =   ""
+      Index           =   -2147483648
+      InitialParent   =   ""
+      Italic          =   ""
+      Left            =   0
+      LockBottom      =   True
+      LockedInPosition=   False
+      LockLeft        =   True
+      LockRight       =   True
+      LockTop         =   False
+      Multiline       =   ""
+      Scope           =   0
+      Selectable      =   False
+      TabIndex        =   1
+      TabPanelIndex   =   0
+      Text            =   "Rule: 2/23       Gen:0       Pop:0       Dim:0x0"
+      TextAlign       =   0
+      TextColor       =   &h000000
+      TextFont        =   "System"
+      TextSize        =   0
+      TextUnit        =   0
+      Top             =   603
+      Transparent     =   False
+      Underline       =   ""
+      Visible         =   True
+      Width           =   372
+   End
+   Begin Label Location
+      AutoDeactivate  =   True
+      Bold            =   ""
+      DataField       =   ""
+      DataSource      =   ""
+      Enabled         =   True
+      Height          =   21
+      HelpTag         =   ""
+      Index           =   -2147483648
+      InitialParent   =   ""
+      Italic          =   ""
+      Left            =   486
+      LockBottom      =   True
+      LockedInPosition=   False
+      LockLeft        =   False
+      LockRight       =   True
+      LockTop         =   False
+      Multiline       =   ""
+      Scope           =   0
+      Selectable      =   False
+      TabIndex        =   3
+      TabPanelIndex   =   0
+      Text            =   "0, 0   "
+      TextAlign       =   2
+      TextColor       =   &h000000
+      TextFont        =   "System"
+      TextSize        =   0
+      TextUnit        =   0
+      Top             =   603
+      Transparent     =   False
+      Underline       =   ""
+      Visible         =   True
+      Width           =   114
+   End
+   Begin PopupMenu ComboBox1
+      AutoDeactivate  =   True
+      Bold            =   ""
+      DataField       =   ""
+      DataSource      =   ""
+      Enabled         =   True
+      Height          =   20
+      HelpTag         =   ""
+      Index           =   -2147483648
+      InitialParent   =   ""
+      InitialValue    =   "Fastest\r\nFast\r\nNormal\r\nSlow\r\nSlowest"
+      Italic          =   ""
+      Left            =   384
+      ListIndex       =   1
+      LockBottom      =   True
+      LockedInPosition=   False
+      LockLeft        =   False
+      LockRight       =   True
+      LockTop         =   False
+      Scope           =   0
+      TabIndex        =   2
+      TabPanelIndex   =   0
+      TabStop         =   True
+      TextFont        =   "System"
+      TextSize        =   0
+      TextUnit        =   0
+      Top             =   602
+      Underline       =   ""
+      Visible         =   True
+      Width           =   90
    End
 End
 #tag EndWindow
@@ -366,6 +377,25 @@ End
 	#tag EndMenuHandler
 
 	#tag MenuHandler
+		Function DecreaseSize() As Boolean Handles DecreaseSize.Action
+			If AcquireWorldLock() Then
+			CellSize = CellSize * 0.75
+			WorldLock.Release
+			End If
+			Return True
+			
+		End Function
+	#tag EndMenuHandler
+
+	#tag MenuHandler
+		Function IncreaseSize() As Boolean Handles IncreaseSize.Action
+			If CellSize < 0.5 * Me.Width Then CellSize = Max(CellSize * 1.25, 2)
+			Return True
+			
+		End Function
+	#tag EndMenuHandler
+
+	#tag MenuHandler
 		Function OpenWorldFile() As Boolean Handles OpenWorldFile.Action
 			Dim f As FolderItem = GetOpenFolderItem(FileTypes1.All)
 			If f <> Nil Then
@@ -524,7 +554,12 @@ End
 		    Return dead
 		  End If
 		  
-		  Dim neighborcount As Integer = WorldArray(X - 1, Y - 1) + WorldArray(X, Y - 1) + WorldArray(X + 1, Y - 1) + WorldArray(X + 1, Y) + _
+		  If UBound(WorldArray, 1) < X + 1 Or UBound(WorldArray, 2) < Y + 1 Then
+		    ReDim WorldArray(Max(X + 1, UBound(WorldArray, 1)), Max(Y + 1, UBound(WorldArray, 2)))
+		  End If
+		  Dim neighborcount As Integer 
+		  
+		  neighborcount = WorldArray(X - 1, Y - 1) + WorldArray(X, Y - 1) + WorldArray(X + 1, Y - 1) + WorldArray(X + 1, Y) + _
 		  WorldArray(X + 1, Y + 1) + WorldArray(X, Y + 1) + WorldArray(X - 1, Y + 1) + WorldArray(X - 1, Y)
 		  
 		  Dim status As Integer = WorldArray(X, Y)
@@ -536,7 +571,7 @@ End
 		  Return status
 		  
 		Exception
-		  Quit
+		  Return dead
 		End Function
 	#tag EndMethod
 
@@ -579,7 +614,7 @@ End
 		    Dim sX, sY As Integer
 		    sX = Val(NthField(sz, "*", 1))
 		    sY = Val(NthField(sz, "*", 2))
-		    If sX > UBound(WorldArray, 1) Then Slider1.Value = World.Width / sX
+		    If sX > UBound(WorldArray, 1) Then CellSize = World.Width / sX
 		    Reset(False)
 		    If rle Then
 		      Dim s As String
@@ -636,7 +671,7 @@ End
 		    obuff = New Picture(Canvas1.Width, Canvas1.Height)
 		    obuff.Graphics.ClearRect(0, 0, obuff.Width, obuff.Height)
 		    Dim g As Graphics = obuff.Graphics
-		    If ShowGrid.Value Then
+		    If ShowGrid Then
 		      g.ForeColor = RGB(LifeColor.Red, LifeColor.Green, LifeColor.Blue, &h99)
 		      Dim c As Integer = Max(g.Width, g.Height)
 		      For X As Integer = 0 To c Step CellSize
@@ -816,9 +851,27 @@ End
 		BornRules() As Integer
 	#tag EndProperty
 
-	#tag Property, Flags = &h0
-		CellSize As Integer = 10
-	#tag EndProperty
+	#tag ComputedProperty, Flags = &h0
+		#tag Getter
+			Get
+			  return mCellSize
+			End Get
+		#tag EndGetter
+		#tag Setter
+			Set
+			  If value <= 0 Then value = 1
+			  mCellSize = value
+			  If AcquireWorldLock() Then
+			    CellSize = Value
+			    Reset(False, False)
+			    Repaint()
+			    WorldLock.Release
+			  End If
+			  Canvas1.Refresh(False)
+			End Set
+		#tag EndSetter
+		CellSize As Integer
+	#tag EndComputedProperty
 
 	#tag Property, Flags = &h0
 		DeadColor As Color = &c80808000
@@ -840,12 +893,20 @@ End
 		Private LifeCount As UInt64
 	#tag EndProperty
 
+	#tag Property, Flags = &h21
+		Private mCellSize As Integer = 10
+	#tag EndProperty
+
 	#tag Property, Flags = &h0
 		Modified As Boolean
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
 		Private obuff As Picture
+	#tag EndProperty
+
+	#tag Property, Flags = &h0
+		ShowGrid As Boolean
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
@@ -890,19 +951,6 @@ End
 
 #tag EndWindowCode
 
-#tag Events Slider1
-	#tag Event
-		Sub ValueChanged()
-		  If AcquireWorldLock() Then
-		    CellSize = Me.Value
-		    Reset(False, False)
-		    Repaint()
-		    WorldLock.Release
-		  End If
-		  Canvas1.Refresh(False)
-		End Sub
-	#tag EndEvent
-#tag EndEvents
 #tag Events Canvas1
 	#tag Event
 		Sub Paint(g As Graphics)
@@ -918,6 +966,7 @@ End
 	#tag EndEvent
 	#tag Event
 		Sub Open()
+		  RenderThread.Priority = RenderThread.Priority * 2
 		  If AcquireWorldLock() Then
 		    Reset()
 		    WorldLock.Release
@@ -944,15 +993,28 @@ End
 		  Me.Refresh(False)
 		End Function
 	#tag EndEvent
-#tag EndEvents
-#tag Events Slider2
 	#tag Event
-		Sub ValueChanged()
-		  If AcquireWorldLock() Then
-		    ThreadSleep = Me.Value
-		    WorldLock.Release
-		  End If
+		Sub MouseMove(X As Integer, Y As Integer)
+		  Dim cellX, cellY As Integer
+		  cellX = X \ CellSize
+		  cellY = Y \ CellSize
+		  Location.Text = Format(cellX, "###,###,##0") + ", " + Format(cellY, "###,###,##0") + " "
+		  Location.Invalidate
 		End Sub
+	#tag EndEvent
+	#tag Event
+		Function KeyDown(Key As String) As Boolean
+		  ShowGrid = Not ShowGrid
+		  If Key = " " Then
+		    If AcquireWorldLock() Then
+		      obuff = Nil
+		      Repaint()
+		      WorldLock.Release
+		    End If
+		    Canvas1.Invalidate(True)
+		    Return True
+		  End If
+		End Function
 	#tag EndEvent
 #tag EndEvents
 #tag Events Timer1
@@ -967,9 +1029,25 @@ End
 		      If Modified Then m = "*"
 		      m = " - " + WorldFile.Name + m
 		    End If
-		    Self.Title = "Game of life - " + Format(GenCount, "###,###,###,###,###,###,##0") + " generations (" _
-		    + Format(sx, "###,###,##0") + "x" + Format(sy, "###,###,##0") + ";" + _
-		    Format(LifeCount, "###,###,##0") + "/" + Format(sx * sy, "###,###,##0") + ")" + m
+		    Self.Title = "Game of life" + m
+		    ' Rule: 2/23       Gen:0       Pop:0       Dim:0x0
+		    
+		    Dim rl, gn, pp, dm As String
+		    BornRules.Sort
+		    SurviveRules.Sort
+		    For i As Integer = 0 To UBound(BornRules)
+		      rl = rl + Str(BornRules(i))
+		    Next
+		    rl = rl + "/"
+		    For i As Integer = 0 To UBound(SurviveRules)
+		      rl = rl + Str(SurviveRules(i))
+		    Next
+		    rl = "Rule: " + rl
+		    gn = "Gen: " + Format(GenCount, "###,###,###,###,###,###,##0")
+		    pp = "Pop: " + Format(LifeCount, "###,###,##0") + "/" + Format(sx * sy, "###,###,##0")
+		    dm = "Dim: " + Format(sx, "###,###,##0") + "x" + Format(sy, "###,###,##0")
+		    Status.Text = rl + "    " + dm + "     " + gn + "     " + pp
+		    
 		    If App.LoadFile <> Nil And App.LoadFile.Exists And Not App.LoadFile.Directory Then
 		      Reset(False, True)
 		      WorldLock.Release
@@ -982,18 +1060,6 @@ End
 		      WorldLock.Release
 		    End If
 		  End If
-		End Sub
-	#tag EndEvent
-#tag EndEvents
-#tag Events ShowGrid
-	#tag Event
-		Sub Action()
-		  If AcquireWorldLock() Then
-		    obuff = Nil
-		    Repaint()
-		    WorldLock.Release
-		  End If
-		  Canvas1.Invalidate(True)
 		End Sub
 	#tag EndEvent
 #tag EndEvents
@@ -1038,14 +1104,36 @@ End
 		      Modified = True
 		    Finally
 		      WorldLock.Release
-		      Me.Sleep(ThreadSleep)
 		      App.YieldToNextThread
 		      If StepGen Then
 		        StepGen = False
 		        Me.Suspend
+		      Else
+		        Me.Sleep(ThreadSleep)
 		      End If
 		    End Try
 		  Loop
+		End Sub
+	#tag EndEvent
+#tag EndEvents
+#tag Events ComboBox1
+	#tag Event
+		Sub Change()
+		  If AcquireWorldLock() Then
+		    Select Case Me.Text
+		    Case "Fastest"
+		      ThreadSleep = 10
+		    Case "Fast"
+		      ThreadSleep = 25
+		    Case "Normal"
+		      ThreadSleep = 100
+		    Case "Slow"
+		      ThreadSleep = 500
+		    Case "Slowest"
+		      ThreadSleep = 1000
+		    End Select
+		    WorldLock.Release
+		  End If
 		End Sub
 	#tag EndEvent
 #tag EndEvents
