@@ -181,10 +181,7 @@ End
 #tag WindowCode
 	#tag Event
 		Sub Activate()
-		  If AcquireWorldLock() Then
-		    Repaint()
-		    WorldLock.Release
-		  End If
+		  
 		  Canvas1.Invalidate(True)
 		End Sub
 	#tag EndEvent
@@ -238,22 +235,8 @@ End
 	#tag EndEvent
 
 	#tag Event
-		Sub Maximize()
-		  If AcquireWorldLock() Then
-		    Repaint()
-		    WorldLock.Release
-		  End If
-		  Canvas1.Invalidate(True)
-		End Sub
-	#tag EndEvent
-
-	#tag Event
 		Sub Minimize()
-		  If AcquireWorldLock() Then
-		    Repaint()
-		    WorldLock.Release
-		  End If
-		  Canvas1.Invalidate(True)
+		  IsVisible = False
 		End Sub
 	#tag EndEvent
 
@@ -266,7 +249,9 @@ End
 	#tag Event
 		Sub Resized()
 		  If AcquireWorldLock() Then
+		    Dim g As Integer = GenCount
 		    Reset(False, False)
+		    GenCount = g
 		    Repaint()
 		    WorldLock.Release
 		  End If
@@ -276,11 +261,7 @@ End
 
 	#tag Event
 		Sub Restore()
-		  If AcquireWorldLock() Then
-		    Repaint()
-		    WorldLock.Release
-		  End If
-		  Canvas1.Invalidate(True)
+		  IsVisible = True
 		End Sub
 	#tag EndEvent
 
@@ -389,7 +370,7 @@ End
 
 	#tag MenuHandler
 		Function IncreaseSize() As Boolean Handles IncreaseSize.Action
-			If CellSize < 0.5 * Me.Width Then CellSize = Max(CellSize * 1.25, 2)
+			If CellSize < 0.5 * Me.Width Then CellSize = Max(CellSize * 1.25, 6)
 			Return True
 			
 		End Function
@@ -689,25 +670,42 @@ End
 
 	#tag Method, Flags = &h21
 		Private Sub Repaint()
-		  If WorldLock.TrySignal Then
-		    Raise New IllegalLockingException ' callers must call AcquireWorldLock first!
+		  If IsVisible Then
+		    If WorldLock.TrySignal Then
+		      Raise New IllegalLockingException ' callers must call AcquireWorldLock first!
+		    End If
+		    LastWorld = World
+		    Dim wg As Graphics = World.Graphics
+		    wg.ForeColor = DeadColor
+		    wg.FillRect(0, 0, wg.Width, wg.Height)
+		    If CellSize > 1 Then
+		      Dim sX, sY As Integer
+		      sX = UBound(WorldArray, 1)
+		      sY = UBound(WorldArray, 2)
+		      For X As Integer = 0 To sX
+		        For Y As Integer = 0 To sY
+		          If WorldArray(X, Y) = alive Then
+		            wg.ForeColor = LifeColor
+		            wg.FillRect(X * CellSize, Y * CellSize, CellSize, CellSize)
+		          End If
+		        Next
+		      Next
+		    Else
+		      Dim surf As RGBSurface = World.RGBSurface
+		      Dim sX, sY As Integer
+		      sX = UBound(WorldArray, 1)
+		      sY = UBound(WorldArray, 2)
+		      For X As Integer = 0 To sX
+		        For Y As Integer = 0 To sY
+		          If WorldArray(X, Y) = alive Then
+		            surf.Pixel(X * CellSize, Y * CellSize) = LifeColor
+		          End If
+		        Next
+		      Next
+		    End If
+		    
+		    Timer1.Mode = Timer.ModeSingle
 		  End If
-		  LastWorld = World
-		  Dim wg As Graphics = World.Graphics
-		  wg.ForeColor = DeadColor
-		  wg.FillRect(0, 0, wg.Width, wg.Height)
-		  Dim sX, sY As Integer
-		  sX = UBound(WorldArray, 1)
-		  sY = UBound(WorldArray, 2)
-		  For X As Integer = 0 To sX
-		    For Y As Integer = 0 To sY
-		      If WorldArray(X, Y) = alive Then
-		        wg.ForeColor = LifeColor
-		        wg.FillRect(X * CellSize, Y * CellSize, CellSize, CellSize)
-		      End If
-		    Next
-		  Next
-		  Timer1.Mode = Timer.ModeSingle
 		  
 		Exception
 		  Return
@@ -879,6 +877,10 @@ End
 
 	#tag Property, Flags = &h0
 		GenCount As UInt64
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private IsVisible As Boolean = True
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
