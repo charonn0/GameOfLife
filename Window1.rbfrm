@@ -222,6 +222,8 @@ End
 		Sub EnableMenuItems()
 		  Dim mnu As MenuItem = Self.MenuBar.Item(0).Item(1)
 		  mnu.Enabled = WorldFile <> Nil
+		  mnu = Self.MenuBar.Item(1).Item(4)
+		  mnu.Checked = DoFade
 		End Sub
 	#tag EndEvent
 
@@ -265,6 +267,16 @@ End
 		End Sub
 	#tag EndEvent
 
+
+	#tag MenuHandler
+		Function CellFade() As Boolean Handles CellFade.Action
+			Dim mnu As MenuItem = Self.MenuBar.Item(1).Item(4)
+			DoFade = Not DoFade
+			mnu.Checked = DoFade
+			Return True
+			
+		End Function
+	#tag EndMenuHandler
 
 	#tag MenuHandler
 		Function ChangeRulesItem() As Boolean Handles ChangeRulesItem.Action
@@ -538,7 +550,7 @@ End
 		  If UBound(WorldArray, 1) < X + 1 Or UBound(WorldArray, 2) < Y + 1 Then
 		    ReDim WorldArray(Max(X + 1, UBound(WorldArray, 1)), Max(Y + 1, UBound(WorldArray, 2)))
 		  End If
-		  Dim neighborcount As Integer 
+		  Dim neighborcount As Integer
 		  
 		  neighborcount = WorldArray(X - 1, Y - 1) + WorldArray(X, Y - 1) + WorldArray(X + 1, Y - 1) + WorldArray(X + 1, Y) + _
 		  WorldArray(X + 1, Y + 1) + WorldArray(X, Y + 1) + WorldArray(X - 1, Y + 1) + WorldArray(X - 1, Y)
@@ -676,7 +688,11 @@ End
 		    End If
 		    LastWorld = World
 		    Dim wg As Graphics = World.Graphics
-		    wg.ForeColor = DeadColor
+		    If DoFade Then
+		      wg.ForeColor = RGB(DeadColor.Red,DeadColor.Green, DeadColor.Blue, 99)
+		    Else
+		      wg.ForeColor = Deadcolor
+		    End If
 		    wg.FillRect(0, 0, wg.Width, wg.Height)
 		    If CellSize > 1 Then
 		      Dim sX, sY As Integer
@@ -872,7 +888,11 @@ End
 	#tag EndComputedProperty
 
 	#tag Property, Flags = &h0
-		DeadColor As Color = &c80808000
+		DeadColor As Color = &cC0C0C000
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private DoFade As Boolean
 	#tag EndProperty
 
 	#tag Property, Flags = &h0

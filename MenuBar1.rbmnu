@@ -74,6 +74,12 @@ Begin Menu MenuBar1
          Index = -2147483648
          AutoEnable = True
       End
+      Begin MenuItem CellFade
+         SpecialMenu = 0
+         Text = "Fade on death"
+         Index = -2147483648
+         AutoEnable = True
+      End
    End
    Begin MenuItem WorldControl
       SpecialMenu = 0
