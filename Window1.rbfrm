@@ -69,7 +69,7 @@ Begin Window Window1
       Index           =   -2147483648
       Left            =   658
       LockedInPosition=   False
-      Priority        =   5
+      Priority        =   10
       Scope           =   0
       StackSize       =   0
       TabPanelIndex   =   0
@@ -191,9 +191,15 @@ End
 		  #pragma Unused appQuitting
 		  Dim killed As Boolean
 		  If Not AcquireWorldLock() Then
+		    #If DebugBuild Then
+		      System.DebugLog(CurrentMethodName + " failed to acquire the world lock.")
+		    #endif
 		    RenderThread.Kill
 		    killed = True
 		  End If
+		  #If DebugBuild Then
+		    System.DebugLog(CurrentMethodName + " has acquired the world lock.")
+		  #endif
 		  If Modified And WorldFile <> Nil Then
 		    Select Case MsgBox("Save changes to " + WorldFile.Name + "?", 3 + 48, "File modified")
 		    Case 2 ' cancel
@@ -214,7 +220,11 @@ End
 		      End If
 		    End Select
 		  End If
-		  
+		Finally
+		  WorldLock.Release
+		  #If DebugBuild Then
+		    System.DebugLog(CurrentMethodName + " has released the world lock.")
+		  #endif
 		End Function
 	#tag EndEvent
 
@@ -251,11 +261,21 @@ End
 	#tag Event
 		Sub Resized()
 		  If AcquireWorldLock() Then
+		    #If DebugBuild Then
+		      System.DebugLog(CurrentMethodName + " has acquired the world lock.")
+		    #endif
 		    Dim g As Integer = GenCount
 		    Reset(False, False)
 		    GenCount = g
 		    Repaint()
 		    WorldLock.Release
+		    #If DebugBuild Then
+		      System.DebugLog(CurrentMethodName + " has released the world lock.")
+		    #endif
+		  Else
+		    #If DebugBuild Then
+		      System.DebugLog(CurrentMethodName + " failed to acquire the world lock.")
+		    #endif
 		  End If
 		  Canvas1.Invalidate(True)
 		End Sub
@@ -281,6 +301,9 @@ End
 	#tag MenuHandler
 		Function ChangeRulesItem() As Boolean Handles ChangeRulesItem.Action
 			If AcquireWorldLock() Then
+			#If DebugBuild Then
+			System.DebugLog(CurrentMethodName + " has acquired the world lock.")
+			#endif
 			Dim s(), b() As Integer
 			For i As Integer = 0 To UBound(BornRules)
 			b.Append(BornRules(i))
@@ -300,7 +323,9 @@ End
 			WorldLock.Release
 			Canvas1.Refresh(False)
 			Else
-			MsgBox(CurrentMethodName + ": Unable to lock world!")
+			#If DebugBuild Then
+			System.DebugLog(CurrentMethodName + " failed to acquire the world lock.")
+			#endif
 			End If
 			
 			Return True
@@ -311,12 +336,20 @@ End
 	#tag MenuHandler
 		Function ClearWorld() As Boolean Handles ClearWorld.Action
 			If AcquireWorldLock() Then
+			#If DebugBuild Then
+			System.DebugLog(CurrentMethodName + " has acquired the world lock.")
+			#endif
 			Reset(False, True)
 			Repaint()
 			Canvas1.Invalidate
 			WorldLock.Release
+			#If DebugBuild Then
+			System.DebugLog(CurrentMethodName + " has released the world lock.")
+			#endif
 			Else
-			MsgBox(CurrentMethodName + ": Unable to lock world!")
+			#If DebugBuild Then
+			System.DebugLog(CurrentMethodName + " failed to acquire the world lock.")
+			#endif
 			End If
 			Return True
 			
@@ -327,6 +360,9 @@ End
 		Function CloseItem() As Boolean Handles CloseItem.Action
 			Dim killed As Boolean
 			If Not AcquireWorldLock() Then
+			#If DebugBuild Then
+			System.DebugLog(CurrentMethodName + " failed to acquire the world lock.")
+			#endif
 			RenderThread.Kill
 			killed = True
 			End If
@@ -337,6 +373,9 @@ End
 			RenderThread.Run
 			Else
 			WorldLock.Release
+			#If DebugBuild Then
+			System.DebugLog(CurrentMethodName + " has released the world lock.")
+			#endif
 			End If
 			Return True
 			Case 6 ' save
@@ -371,10 +410,25 @@ End
 
 	#tag MenuHandler
 		Function DecreaseSize() As Boolean Handles DecreaseSize.Action
-			If AcquireWorldLock() Then
-			CellSize = CellSize * 0.75
-			WorldLock.Release
+			If Not AcquireWorldLock() Then
+			MsgBox(CurrentMethodName + ": Unable to lock world!")
+			#If DebugBuild Then
+			System.DebugLog(CurrentMethodName + " failed to acquire the world lock.")
+			#endif
+			Return True
 			End If
+			#If DebugBuild Then
+			System.DebugLog(CurrentMethodName + " has acquired the world lock.")
+			#endif
+			CellSize = CellSize * 0.75
+			obuff = Nil
+			Reset(False, False)
+			WorldLock.Release
+			Repaint
+			Canvas1.Invalidate(True)
+			#If DebugBuild Then
+			System.DebugLog(CurrentMethodName + " has released the world lock.")
+			#endif
 			Return True
 			
 		End Function
@@ -384,11 +438,8 @@ End
 		Function GridItem() As Boolean Handles GridItem.Action
 			Dim mnu As MenuItem = Self.MenuBar.Item(1).Item(5)
 			ShowGrid = Not ShowGrid
-			If AcquireWorldLock() Then
 			obuff = Nil
 			Repaint()
-			WorldLock.Release
-			End If
 			Canvas1.Invalidate(True)
 			mnu.Checked = ShowGrid
 			Return True
@@ -398,9 +449,26 @@ End
 
 	#tag MenuHandler
 		Function IncreaseSize() As Boolean Handles IncreaseSize.Action
-			If CellSize < 0.5 * Me.Width Then CellSize = Max(CellSize * 1.25, 6)
+			If Not AcquireWorldLock() Then
+			MsgBox(CurrentMethodName + ": Unable to lock world!")
+			#If DebugBuild Then
+			System.DebugLog(CurrentMethodName + " failed to acquire the world lock.")
+			#endif
 			Return True
-			
+			End If
+			#If DebugBuild Then
+			System.DebugLog(CurrentMethodName + " has acquired the world lock.")
+			#endif
+			If CellSize < 0.5 * Me.Width Then CellSize = Max(CellSize * 1.25, 6)
+			obuff = Nil
+			Reset(False, False)
+			WorldLock.Release
+			Repaint
+			Canvas1.Invalidate(True)
+			#If DebugBuild Then
+			System.DebugLog(CurrentMethodName + " has released the world lock.")
+			#endif
+			Return True
 		End Function
 	#tag EndMenuHandler
 
@@ -421,12 +489,21 @@ End
 	#tag MenuHandler
 		Function Randomize() As Boolean Handles Randomize.Action
 			If AcquireWorldLock() Then
+			#If DebugBuild Then
+			System.DebugLog(CurrentMethodName + " has acquired the world lock.")
+			#endif
 			Reset()
 			Repaint()
 			WorldLock.Release
+			#If DebugBuild Then
+			System.DebugLog(CurrentMethodName + " has released the world lock.")
+			#endif
 			Canvas1.Refresh(False)
 			Else
 			MsgBox(CurrentMethodName + ": Unable to lock world!")
+			#If DebugBuild Then
+			System.DebugLog(CurrentMethodName + " failed to acquire the world lock.")
+			#endif
 			End If
 			Return True
 			
@@ -435,7 +512,15 @@ End
 
 	#tag MenuHandler
 		Function RunItem() As Boolean Handles RunItem.Action
-			If AcquireWorldLock() Then
+			While Not AcquireWorldLock()
+			#If DebugBuild Then
+			System.DebugLog(CurrentMethodName + " failed to acquire the world lock.")
+			#endif
+			Continue
+			Wend
+			#If DebugBuild Then
+			System.DebugLog(CurrentMethodName + " has acquired the world lock.")
+			#endif
 			Select Case RenderThread.State
 			Case Thread.Running, Thread.Sleeping
 			RenderThread.Suspend
@@ -445,16 +530,22 @@ End
 			RenderThread.Run
 			End Select
 			WorldLock.Release
-			Else
-			MsgBox(CurrentMethodName + ": Unable to lock world!")
-			End If
+			#If DebugBuild Then
+			System.DebugLog(CurrentMethodName + " has released the world lock.")
+			#endif
 			Return True
-			
 		End Function
 	#tag EndMenuHandler
 
 	#tag MenuHandler
 		Function SaveAsItem() As Boolean Handles SaveAsItem.Action
+			If Not AcquireWorldLock() Then
+			MsgBox(CurrentMethodName + ": Unable to lock world!")
+			#If DebugBuild Then
+			System.DebugLog(CurrentMethodName + " failed to acquire the world lock.")
+			#endif
+			Return True
+			End If
 			Dim dlg As New SaveAsDialog
 			dlg.Filter = FileTypes1.All
 			dlg.SuggestedFileName = "New World.gol"
@@ -466,17 +557,24 @@ End
 			bs.Close
 			WorldFile = dlg.Result
 			Modified = False
-			If AcquireWorldLock() Then
-			Repaint
+			End If
 			WorldLock.Release
-			End If
-			End If
 			Return True
 		End Function
 	#tag EndMenuHandler
 
 	#tag MenuHandler
 		Function SaveItem() As Boolean Handles SaveItem.Action
+			If Not AcquireWorldLock() Then
+			MsgBox(CurrentMethodName + ": Unable to lock world!")
+			#If DebugBuild Then
+			System.DebugLog(CurrentMethodName + " failed to acquire the world lock.")
+			#endif
+			Return True
+			End If
+			#If DebugBuild Then
+			System.DebugLog(CurrentMethodName + " has acquired the world lock.")
+			#endif
 			Dim f As FolderItem
 			If WorldFile <> Nil And WorldFile.Exists And Not WorldFile.Directory Then
 			f = WorldFile
@@ -497,12 +595,11 @@ End
 			bs.Close
 			WorldFile = f
 			Modified = False
-			If AcquireWorldLock() Then
-			Repaint
+			End If
 			WorldLock.Release
-			End If
-			End If
-			
+			#If DebugBuild Then
+			System.DebugLog(CurrentMethodName + " has released the world lock.")
+			#endif
 			Return True
 		End Function
 	#tag EndMenuHandler
@@ -511,10 +608,7 @@ End
 		Function SetColor() As Boolean Handles SetColor.Action
 			Dim c As Color = LifeColor
 			If SelectColor(c, "Choose life's color") Then LifeColor = c
-			If AcquireWorldLock() Then
 			Repaint()
-			WorldLock.Release
-			End If
 			Canvas1.Invalidate(True)
 			Return True
 			
@@ -552,7 +646,6 @@ End
 		    App.YieldToNextThread
 		    TryCount = TryCount - 1
 		  Wend
-		  System.DebugLog(Str(TryCount) + " remaining")
 		  Return TryCount > 0
 		End Function
 	#tag EndMethod
@@ -563,15 +656,15 @@ End
 		    Return dead
 		  End If
 		  
-		  If UBound(WorldArray, 1) < X + 1 Or UBound(WorldArray, 2) < Y + 1 Then
-		    ReDim WorldArray(Max(X + 1, UBound(WorldArray, 1)), Max(Y + 1, UBound(WorldArray, 2)))
+		  If UBound(LifeWorld, 1) < X + 1 Or UBound(LifeWorld, 2) < Y + 1 Then
+		    ReDim LifeWorld(Max(X + 1, UBound(LifeWorld, 1)), Max(Y + 1, UBound(LifeWorld, 2)))
 		  End If
 		  Dim neighborcount As Integer
 		  
-		  neighborcount = WorldArray(X - 1, Y - 1) + WorldArray(X, Y - 1) + WorldArray(X + 1, Y - 1) + WorldArray(X + 1, Y) + _
-		  WorldArray(X + 1, Y + 1) + WorldArray(X, Y + 1) + WorldArray(X - 1, Y + 1) + WorldArray(X - 1, Y)
+		  neighborcount = LifeWorld(X - 1, Y - 1) + LifeWorld(X, Y - 1) + LifeWorld(X + 1, Y - 1) + LifeWorld(X + 1, Y) + _
+		  LifeWorld(X + 1, Y + 1) + LifeWorld(X, Y + 1) + LifeWorld(X - 1, Y + 1) + LifeWorld(X - 1, Y)
 		  
-		  Dim status As Integer = WorldArray(X, Y)
+		  Dim status As Integer = LifeWorld(X, Y)
 		  If SurviveRules.IndexOf(neighborcount) = -1 And status = alive Then
 		    status = dead
 		  ElseIf BornRules.IndexOf(neighborcount) > -1 And status = dead Then
@@ -587,79 +680,85 @@ End
 	#tag Method, Flags = &h0
 		Sub LoadWorld(ReadFrom As Readable)
 		  pleasewait.Show
-		  If AcquireWorldLock() Then
-		    ReDim BornRules(-1)
-		    ReDim SurviveRules(-1)
-		    Dim y As Integer
-		    Dim x As Integer
-		    Dim rle As Boolean
-		    Dim sz As String
-		    Select Case ReadFrom.Read(3)
-		    Case "GOL"
-		      rle = False
-		    Case "RLE"
-		      rle = True
-		    Else
-		      Raise New UnsupportedFormatException
-		    End Select
-		    While Not ReadFrom.EOF
-		      Dim char As String = ReadFrom.Read(1)
-		      If char = "#" Then
-		        Exit While
-		      Else
-		        sz = sz + char
-		      End If
-		    Wend
-		    Dim rules As String = NthField(sz, "R", 2)
-		    sz = NthField(sz, "R", 1)
-		    Dim tmp() As String = Split(NthField(rules, "/", 1), "")
-		    For Each r As String In tmp
-		      SurviveRules.Append(Val(r))
-		    Next
-		    tmp = Split(NthField(rules, "/", 2), "")
-		    For Each r As String In tmp
-		      BornRules.Append(Val(r))
-		    Next
-		    Dim sX, sY As Integer
-		    sX = Val(NthField(sz, "*", 1))
-		    sY = Val(NthField(sz, "*", 2))
-		    If sX > UBound(WorldArray, 1) Then CellSize = World.Width / sX
-		    Reset(False)
-		    If rle Then
-		      Dim s As String
-		      While Not ReadFrom.EOF
-		        s = s + ReadFrom.Read(1)
-		      Wend
-		      s = RLDecode(s)
-		      ReadFrom = New BinaryStream(s)
-		    End If
-		    
-		    While Not ReadFrom.EOF
-		      Dim char As String = ReadFrom.Read(1)
-		      Select Case char
-		      Case "X", "o"
-		        WorldArray(X, Y) = alive
-		        Y = Y + 1
-		      Case "-", "b"
-		        WorldArray(X, Y) = dead
-		        Y = Y + 1
-		      Case "!", "$"
-		        X = X + 1
-		        Y = 0
-		      Else
-		        'If char = "E" And ReadFrom.Read(2) = "OF" Then
-		        Exit While
-		        'Raise New UnsupportedFormatException
-		      End Select
-		    Wend
-		    
-		    Repaint
-		    Modified = False
-		    WorldLock.Release
-		    Canvas1.Invalidate
-		  Else
+		  If Not AcquireWorldLock() Then
 		    MsgBox(CurrentMethodName + ": Unable to lock world!")
 		  End If
+		  #If DebugBuild Then
+		    System.DebugLog(CurrentMethodName + " has acquired the world lock.")
+		  #endif
+		  ReDim BornRules(-1)
+		  ReDim SurviveRules(-1)
+		  Dim y As Integer
+		  Dim x As Integer
+		  Dim rle As Boolean
+		  Dim sz As String
+		  Select Case ReadFrom.Read(3)
+		  Case "GOL"
+		    rle = False
+		  Case "RLE"
+		    rle = True
+		  Else
+		    Raise New UnsupportedFormatException
+		  End Select
+		  While Not ReadFrom.EOF
+		    Dim char As String = ReadFrom.Read(1)
+		    If char = "#" Then
+		      Exit While
+		    Else
+		      sz = sz + char
+		    End If
+		  Wend
+		  Dim rules As String = NthField(sz, "R", 2)
+		  sz = NthField(sz, "R", 1)
+		  Dim tmp() As String = Split(NthField(rules, "/", 1), "")
+		  For Each r As String In tmp
+		    SurviveRules.Append(Val(r))
+		  Next
+		  tmp = Split(NthField(rules, "/", 2), "")
+		  For Each r As String In tmp
+		    BornRules.Append(Val(r))
+		  Next
+		  Dim sX, sY As Integer
+		  sX = Val(NthField(sz, "*", 1))
+		  sY = Val(NthField(sz, "*", 2))
+		  If sX > UBound(RenderWorld, 1) Then CellSize = World.Width / sX
+		  Reset(False)
+		  If rle Then
+		    Dim s As String
+		    While Not ReadFrom.EOF
+		      s = s + ReadFrom.Read(1)
+		    Wend
+		    s = RLDecode(s)
+		    ReadFrom = New BinaryStream(s)
+		  End If
+		  
+		  While Not ReadFrom.EOF
+		    Dim char As String = ReadFrom.Read(1)
+		    Select Case char
+		    Case "X", "o"
+		      RenderWorld(X, Y) = alive
+		      LifeWorld(X, Y) = alive
+		      Y = Y + 1
+		    Case "-", "b"
+		      RenderWorld(X, Y) = dead
+		      LifeWorld(X, Y) = dead
+		      Y = Y + 1
+		    Case "!", "$"
+		      X = X + 1
+		      Y = 0
+		    Else
+		      'If char = "E" And ReadFrom.Read(2) = "OF" Then
+		      Exit While
+		      'Raise New UnsupportedFormatException
+		    End Select
+		  Wend
+		  WorldLock.Release
+		  #If DebugBuild Then
+		    System.DebugLog(CurrentMethodName + " has released the world lock.")
+		  #endif
+		  Repaint
+		  Modified = False
+		  Canvas1.Invalidate
 		  
 		Exception Err As OutOfBoundsException
 		  Call MsgBox("Increase the window size or decrease the cell size to open this file.", 16, "World too large for current settings")
@@ -699,9 +798,6 @@ End
 	#tag Method, Flags = &h21
 		Private Sub Repaint()
 		  If IsVisible Then
-		    If WorldLock.TrySignal Then
-		      Raise New IllegalLockingException ' callers must call AcquireWorldLock first!
-		    End If
 		    LastWorld = World
 		    Dim wg As Graphics = World.Graphics
 		    If DoFade Then
@@ -712,11 +808,11 @@ End
 		    wg.FillRect(0, 0, wg.Width, wg.Height)
 		    If CellSize > 1 Then
 		      Dim sX, sY As Integer
-		      sX = UBound(WorldArray, 1)
-		      sY = UBound(WorldArray, 2)
+		      sX = UBound(RenderWorld, 1)
+		      sY = UBound(RenderWorld, 2)
 		      For X As Integer = 0 To sX
 		        For Y As Integer = 0 To sY
-		          If WorldArray(X, Y) = alive Then
+		          If RenderWorld(X, Y) = alive Then
 		            wg.ForeColor = LifeColor
 		            wg.FillRect(X * CellSize, Y * CellSize, CellSize, CellSize)
 		          End If
@@ -725,11 +821,11 @@ End
 		    Else
 		      Dim surf As RGBSurface = World.RGBSurface
 		      Dim sX, sY As Integer
-		      sX = UBound(WorldArray, 1)
-		      sY = UBound(WorldArray, 2)
+		      sX = UBound(RenderWorld, 1)
+		      sY = UBound(RenderWorld, 2)
 		      For X As Integer = 0 To sX
 		        For Y As Integer = 0 To sY
-		          If WorldArray(X, Y) = alive Then
+		          If RenderWorld(X, Y) = alive Then
 		            surf.Pixel(X * CellSize, Y * CellSize) = LifeColor
 		          End If
 		        Next
@@ -752,21 +848,23 @@ End
 		  End If
 		  
 		  World = New Picture(Me.Width, Me.Height, 32)
-		  If EmptyFirst Then ReDim WorldArray(-1, -1)
-		  ReDim WorldArray(World.Width \ CellSize + 1, World.Height \ CellSize + 1)
+		  If EmptyFirst Then ReDim LifeWorld(-1, -1)
+		  ReDim LifeWorld(World.Width \ CellSize + 1, World.Height \ CellSize + 1)
 		  GenCount = 0
 		  If Populate Then
 		    Dim rand As New Random
-		    For X As Integer = 0 To UBound(WorldArray, 1)
-		      For Y As Integer = 0 To UBound(WorldArray, 2)
+		    For X As Integer = 0 To UBound(LifeWorld, 1)
+		      For Y As Integer = 0 To UBound(LifeWorld, 2)
 		        If Rand.InRange(2, 10) = 8 Then
-		          WorldArray(X, Y) = alive
+		          LifeWorld(X, Y) = alive
 		        Else
-		          WorldArray(X, Y) = dead
+		          LifeWorld(X, Y) = dead
 		        End If
 		      Next
 		    Next
 		  End If
+		  Swap()
+		  
 		End Sub
 	#tag EndMethod
 
@@ -823,57 +921,69 @@ End
 	#tag Method, Flags = &h0
 		Function SaveWorld(WriteTo As Writeable, RLE As Boolean) As Boolean
 		  pleasewait.Show
-		  If AcquireWorldLock(100000) Then
-		    Dim X, Y As Integer
-		    X = UBound(WorldArray, 1)
-		    Y = UBound(WorldArray, 2)
-		    Dim r As String
-		    For i As Integer = 0 To UBound(SurviveRules)
-		      r = r + Str(SurviveRules(i))
-		    Next
-		    r = r + "/"
-		    For i As Integer = 0 To UBound(BornRules)
-		      r = r + Str(BornRules(i))
-		    Next
-		    If Not RLE Then
-		      WriteTo.Write("GOL" + Format(X + 1, "#########0") + "*" + Format(Y + 1, "#########0") + "R" + r + "#")
-		      For i As Integer = 0 To X
-		        For j As Integer = 0 To Y
-		          If WorldArray(i, j) = alive Then
-		            WriteTo.Write("X")
-		          ElseIf WorldArray(i, j) = dead Then
-		            WriteTo.Write("-")
-		          End If
-		        Next
-		        WriteTo.Write("!")
+		  
+		  Dim X, Y As Integer
+		  X = UBound(RenderWorld, 1)
+		  Y = UBound(RenderWorld, 2)
+		  Dim r As String
+		  For i As Integer = 0 To UBound(SurviveRules)
+		    r = r + Str(SurviveRules(i))
+		  Next
+		  r = r + "/"
+		  For i As Integer = 0 To UBound(BornRules)
+		    r = r + Str(BornRules(i))
+		  Next
+		  If Not RLE Then
+		    WriteTo.Write("GOL" + Format(X + 1, "#########0") + "*" + Format(Y + 1, "#########0") + "R" + r + "#")
+		    For i As Integer = 0 To X
+		      For j As Integer = 0 To Y
+		        If RenderWorld(i, j) = alive Then
+		          WriteTo.Write("X")
+		        ElseIf RenderWorld(i, j) = dead Then
+		          WriteTo.Write("-")
+		        End If
 		      Next
-		      WriteTo.Write("EOF")
-		    Else
-		      WriteTo.Write("RLE" + Format(X + 1, "#########0") + "*" + Format(Y + 1, "#########0") + "R" + r + "#")
-		      Dim data As New MemoryBlock(UBound(WorldArray, 1) * UBound(WorldArray, 2))
-		      Dim w As New BinaryStream(data)
-		      For i As Integer = 0 To X
-		        For j As Integer = 0 To Y
-		          If WorldArray(i, j) = alive Then
-		            w.Write("X")
-		          ElseIf WorldArray(i, j) = dead Then
-		            w.Write("-")
-		          End If
-		        Next
-		        w.Write("!")
-		      Next
-		      w.Close
-		      Data = RLEncode(Data)
-		      WriteTo.Write(data)
-		    End If
-		    Modified = False
-		    WorldLock.Release
+		      WriteTo.Write("!")
+		    Next
+		    WriteTo.Write("EOF")
 		  Else
-		    MsgBox(CurrentMethodName + ": Unable to lock world!")
+		    WriteTo.Write("RLE" + Format(X + 1, "#########0") + "*" + Format(Y + 1, "#########0") + "R" + r + "#")
+		    Dim data As New MemoryBlock(UBound(RenderWorld, 1) * UBound(RenderWorld, 2))
+		    Dim w As New BinaryStream(data)
+		    For i As Integer = 0 To X
+		      For j As Integer = 0 To Y
+		        If RenderWorld(i, j) = alive Then
+		          w.Write("X")
+		        ElseIf RenderWorld(i, j) = dead Then
+		          w.Write("-")
+		        End If
+		      Next
+		      w.Write("!")
+		    Next
+		    w.Close
+		    Data = RLEncode(Data)
+		    WriteTo.Write(data)
 		  End If
+		  Modified = False
 		  pleasewait.Close
 		  Return True
 		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub Swap()
+		  Dim i, j As Integer
+		  i = UBound(LifeWorld, 1)
+		  j = UBound(LifeWorld, 2)
+		  If i = 0 Or j = 0 Then Break
+		  ReDim RenderWorld(i, j)
+		  For X As Integer = 0 To i
+		    For Y As Integer = 0 To j
+		      RenderWorld(X, Y) = LifeWorld(X, Y)
+		    Next
+		  Next
+		  
+		End Sub
 	#tag EndMethod
 
 
@@ -891,12 +1001,12 @@ End
 			Set
 			  If value <= 0 Then value = 1
 			  mCellSize = value
-			  If AcquireWorldLock() Then
-			    CellSize = Value
-			    Reset(False, False)
-			    Repaint()
-			    WorldLock.Release
-			  End If
+			  'If AcquireWorldLock() Then
+			  'CellSize = Value
+			  'Reset(False, False)
+			  'Repaint()
+			  'WorldLock.Release
+			  'End If
 			  Canvas1.Refresh(False)
 			End Set
 		#tag EndSetter
@@ -931,6 +1041,10 @@ End
 		Private LifeCount As UInt64
 	#tag EndProperty
 
+	#tag Property, Flags = &h0
+		LifeWorld(-1,-1) As Integer
+	#tag EndProperty
+
 	#tag Property, Flags = &h21
 		Private mCellSize As Integer = 10
 	#tag EndProperty
@@ -941,6 +1055,10 @@ End
 
 	#tag Property, Flags = &h21
 		Private obuff As Picture
+	#tag EndProperty
+
+	#tag Property, Flags = &h0
+		RenderWorld(-1,-1) As Integer
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
@@ -961,10 +1079,6 @@ End
 
 	#tag Property, Flags = &h0
 		World As Picture
-	#tag EndProperty
-
-	#tag Property, Flags = &h0
-		WorldArray(-1,-1) As Integer
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
@@ -1006,27 +1120,42 @@ End
 		Sub Open()
 		  RenderThread.Priority = RenderThread.Priority * 2
 		  If AcquireWorldLock() Then
+		    #If DebugBuild Then
+		      System.DebugLog(CurrentMethodName + " has acquired the world lock.")
+		    #endif
 		    Reset()
 		    WorldLock.Release
+		    #If DebugBuild Then
+		      System.DebugLog(CurrentMethodName + " has release the world lock.")
+		    #endif
 		  End If
 		End Sub
 	#tag EndEvent
 	#tag Event
 		Function MouseDown(X As Integer, Y As Integer) As Boolean
 		  Dim cellX, cellY As Integer
-		  
-		  cellX = X \ CellSize
-		  cellY = Y \ CellSize
-		  
 		  If AcquireWorldLock() Then
-		    If WorldArray(cellX, cellY) = dead Then
-		      WorldArray(cellX, cellY) = alive
+		    #If DebugBuild Then
+		      System.DebugLog(CurrentMethodName + " has acquired the world lock.")
+		    #endif
+		    cellX = X \ CellSize
+		    cellY = Y \ CellSize
+		    If LifeWorld(cellX, cellY) = dead Then
+		      LifeWorld(cellX, cellY) = alive
+		      RenderWorld(cellX, cellY) = alive
 		    Else
-		      WorldArray(cellX, cellY) = dead
+		      LifeWorld(cellX, cellY) = dead
+		      RenderWorld(cellX, cellY) = dead
 		    End If
 		    Modified = True
+		    
 		    Repaint()
 		    WorldLock.Release
+		    #If DebugBuild Then
+		      System.DebugLog(CurrentMethodName + " has acquired the world lock.")
+		    #endif
+		  Else
+		    MsgBox(CurrentMethodName + ": Unable to lock world!")
 		  End If
 		  Me.Refresh(False)
 		End Function
@@ -1044,46 +1173,43 @@ End
 #tag Events Timer1
 	#tag Event
 		Sub Action()
-		  If AcquireWorldLock() Then
-		    Dim sx, sy As Integer
-		    sx = UBound(WorldArray, 1)
-		    sy = UBound(WorldArray, 2)
-		    Dim m As String
-		    If WorldFile <> Nil Then
-		      If Modified Then m = "*"
-		      m = " - " + WorldFile.Name + m
-		    End If
-		    Self.Title = "Game of life" + m
-		    ' Rule: 2/23       Gen:0       Pop:0       Dim:0x0
-		    
-		    Dim rl, gn, pp, dm As String
-		    BornRules.Sort
-		    SurviveRules.Sort
-		    For i As Integer = 0 To UBound(BornRules)
-		      rl = rl + Str(BornRules(i))
-		    Next
-		    rl = rl + "/"
-		    For i As Integer = 0 To UBound(SurviveRules)
-		      rl = rl + Str(SurviveRules(i))
-		    Next
-		    rl = "Rule: " + rl
-		    gn = "Gen: " + Format(GenCount, "###,###,###,###,###,###,##0")
-		    pp = "Pop: " + Format(LifeCount, "###,###,##0") + "/" + Format(sx * sy, "###,###,##0")
-		    dm = "Dim: " + Format(sx, "###,###,##0") + "x" + Format(sy, "###,###,##0")
-		    Status.Text = rl + "    " + dm + "     " + gn + "     " + pp
-		    
-		    If App.LoadFile <> Nil And App.LoadFile.Exists And Not App.LoadFile.Directory Then
-		      Reset(False, True)
-		      WorldLock.Release
-		      Dim bs As BinaryStream = BinaryStream.Open(App.LoadFile)
-		      LoadWorld(bs)
-		      bs.Close
-		      WorldFile = App.LoadFile
-		      App.LoadFile = Nil
-		    Else
-		      WorldLock.Release
-		    End If
+		  Dim sx, sy As Integer
+		  sx = UBound(RenderWorld, 1)
+		  sy = UBound(RenderWorld, 2)
+		  Dim m As String
+		  If WorldFile <> Nil Then
+		    If Modified Then m = "*"
+		    m = " - " + WorldFile.Name + m
 		  End If
+		  Self.Title = "Game of life" + m
+		  ' Rule: 2/23       Gen:0       Pop:0       Dim:0x0
+		  
+		  Dim rl, gn, pp, dm As String
+		  BornRules.Sort
+		  SurviveRules.Sort
+		  For i As Integer = 0 To UBound(BornRules)
+		    rl = rl + Str(BornRules(i))
+		  Next
+		  rl = rl + "/"
+		  For i As Integer = 0 To UBound(SurviveRules)
+		    rl = rl + Str(SurviveRules(i))
+		  Next
+		  rl = "Rule: " + rl
+		  gn = "Gen: " + Format(GenCount, "###,###,###,###,###,###,##0")
+		  pp = "Pop: " + Format(LifeCount, "###,###,##0") + "/" + Format(sx * sy, "###,###,##0")
+		  dm = "Dim: " + Format(sx, "###,###,##0") + "x" + Format(sy, "###,###,##0")
+		  Status.Text = rl + "    " + dm + "     " + gn + "     " + pp
+		  
+		  If App.LoadFile <> Nil And App.LoadFile.Exists And Not App.LoadFile.Directory Then
+		    Reset(False, True)
+		    WorldLock.Release
+		    Dim bs As BinaryStream = BinaryStream.Open(App.LoadFile)
+		    LoadWorld(bs)
+		    bs.Close
+		    WorldFile = App.LoadFile
+		    App.LoadFile = Nil
+		  End If
+		  
 		End Sub
 	#tag EndEvent
 #tag EndEvents
@@ -1094,19 +1220,24 @@ End
 		  Do
 		    App.YieldToNextThread
 		    If Not AcquireWorldLock() Then
+		      #If DebugBuild Then
+		        System.DebugLog(CurrentMethodName + " failed to acquire the world lock!")
+		      #endif
 		      Continue
 		    End If
-		    
+		    #If DebugBuild Then
+		      System.DebugLog(CurrentMethodName + " has acquired the world lock.")
+		    #endif
 		    LifeCount = 0
 		    Dim newworld(-1, -1) As Integer
-		    ReDim newworld(UBound(WorldArray, 1), UBound(WorldArray, 2))
+		    ReDim newworld(UBound(LifeWorld, 1), UBound(LifeWorld, 2))
 		    GenCount = GenCount + 1
 		    Dim stable As Boolean = True
 		    
 		    Try
 		      Dim u1, u2 As Integer
-		      u1 = UBound(WorldArray, 1)
-		      u2 = UBound(WorldArray, 2)
+		      u1 = UBound(LifeWorld, 1)
+		      u2 = UBound(LifeWorld, 2)
 		      For X As Integer = 1 To u1
 		        For Y As Integer = 1 To u2
 		          Dim status As Integer = Life(X, Y)
@@ -1115,19 +1246,23 @@ End
 		            lifecount = lifecount + 1
 		          End If
 		          
-		          If status <> WorldArray(X, Y) Then
+		          If status <> LifeWorld(X, Y) Then
 		            stable = False
 		          End If
 		        Next
 		      Next
 		      
-		      WorldArray = newworld
+		      LifeWorld = newworld
+		      Swap()
 		      Repaint()
 		      Canvas1.Invalidate(True) ' In my defense, the Canvas1.Paint event will yield on the main thread until WorldLock is released.
 		      
 		      Modified = True
 		    Finally
 		      WorldLock.Release
+		      #If DebugBuild Then
+		        System.DebugLog(CurrentMethodName + " has released the world lock.")
+		      #endif
 		      App.YieldToNextThread
 		      If StepGen Then
 		        StepGen = False
@@ -1143,21 +1278,18 @@ End
 #tag Events ComboBox1
 	#tag Event
 		Sub Change()
-		  If AcquireWorldLock() Then
-		    Select Case Me.Text
-		    Case "Fastest"
-		      ThreadSleep = 10
-		    Case "Fast"
-		      ThreadSleep = 25
-		    Case "Normal"
-		      ThreadSleep = 100
-		    Case "Slow"
-		      ThreadSleep = 500
-		    Case "Slowest"
-		      ThreadSleep = 1000
-		    End Select
-		    WorldLock.Release
-		  End If
+		  Select Case Me.Text
+		  Case "Fastest"
+		    ThreadSleep = 10
+		  Case "Fast"
+		    ThreadSleep = 25
+		  Case "Normal"
+		    ThreadSleep = 100
+		  Case "Slow"
+		    ThreadSleep = 500
+		  Case "Slowest"
+		    ThreadSleep = 1000
+		  End Select
 		End Sub
 	#tag EndEvent
 #tag EndEvents
