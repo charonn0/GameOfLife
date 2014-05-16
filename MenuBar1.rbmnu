@@ -78,6 +78,17 @@ Begin Menu MenuBar1
          SpecialMenu = 0
          Text = "Fade on death"
          Index = -2147483648
+         ShortcutKey = "F"
+         Shortcut = "Cmd+F"
+         MenuModifier = True
+         AutoEnable = True
+      End
+      Begin MenuItem GridItem
+         SpecialMenu = 0
+         Text = "Show grid"
+         Index = -2147483648
+         ShortcutKey = "Space"
+         Shortcut = "Space"
          AutoEnable = True
       End
    End

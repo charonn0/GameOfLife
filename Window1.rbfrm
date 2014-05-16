@@ -381,6 +381,22 @@ End
 	#tag EndMenuHandler
 
 	#tag MenuHandler
+		Function GridItem() As Boolean Handles GridItem.Action
+			Dim mnu As MenuItem = Self.MenuBar.Item(1).Item(5)
+			ShowGrid = Not ShowGrid
+			If AcquireWorldLock() Then
+			obuff = Nil
+			Repaint()
+			WorldLock.Release
+			End If
+			Canvas1.Invalidate(True)
+			mnu.Checked = ShowGrid
+			Return True
+			
+		End Function
+	#tag EndMenuHandler
+
+	#tag MenuHandler
 		Function IncreaseSize() As Boolean Handles IncreaseSize.Action
 			If CellSize < 0.5 * Me.Width Then CellSize = Max(CellSize * 1.25, 6)
 			Return True
@@ -1023,20 +1039,6 @@ End
 		  Location.Text = Format(cellX, "###,###,##0") + ", " + Format(cellY, "###,###,##0") + " "
 		  Location.Invalidate
 		End Sub
-	#tag EndEvent
-	#tag Event
-		Function KeyDown(Key As String) As Boolean
-		  ShowGrid = Not ShowGrid
-		  If Key = " " Then
-		    If AcquireWorldLock() Then
-		      obuff = Nil
-		      Repaint()
-		      WorldLock.Release
-		    End If
-		    Canvas1.Invalidate(True)
-		    Return True
-		  End If
-		End Function
 	#tag EndEvent
 #tag EndEvents
 #tag Events Timer1
