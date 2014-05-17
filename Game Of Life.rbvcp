@@ -8,6 +8,7 @@ MenuBar=MenuBar1;MenuBar1.rbmnu;&h55B237FF;&h0;false
 FileTypeSet=FileTypes1;FileTypes1.rbbas;&h2E17B7FF;&h0;false
 Window=RuleChange;RuleChange.rbfrm;&h2E7537FF;&h0;false
 Window=pleasewait;pleasewait.rbfrm;&h1F8077FF;&h0;false
+Class=RLEStream;RLEStream.rbbas;&h6AF00FFF;&h0;false
 DefaultWindow=Window1
 MajorVersion=1
 MinorVersion=0

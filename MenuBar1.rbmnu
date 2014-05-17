@@ -23,6 +23,12 @@ Begin Menu MenuBar1
          MenuModifier = True
          AutoEnable = True
       End
+      Begin MenuItem ConvertItem
+         SpecialMenu = 0
+         Text = "Convert RLE..."
+         Index = -2147483648
+         AutoEnable = True
+      End
       Begin MenuItem SaveItem
          SpecialMenu = 0
          Text = "Save"

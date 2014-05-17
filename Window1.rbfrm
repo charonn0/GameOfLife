@@ -208,15 +208,11 @@ End
 		      Return True
 		    Case 6 ' save
 		      Dim f As FolderItem = SpecialFolder.Temporary.Child(WorldFile.Name)
-		      Dim bs As BinaryStream = BinaryStream.Create(f, True)
-		      If SaveWorld(bs, WorldFileRLE) Then
-		        bs.Close
+		      If SaveWorld(f, WorldFileRLE) Then
 		        WorldFile.Delete
 		        f.MoveFileTo(WorldFile)
-		      ElseIf MsgBox("Unable to save world! Quit anyway?", 4 + 16, "Error") = 6 Then
-		        bs.Close
-		      Else
-		        bs.Close
+		      ElseIf MsgBox("Unable to save world! Quit anyway?", 4 + 16, "Error") <> 6 Then
+		        Return True
 		      End If
 		    End Select
 		  End If
@@ -380,15 +376,11 @@ End
 			Return True
 			Case 6 ' save
 			Dim f As FolderItem = SpecialFolder.Temporary.Child(WorldFile.Name)
-			Dim bs As BinaryStream = BinaryStream.Create(f, True)
-			If SaveWorld(bs, WorldFileRLE) Then
-			bs.Close
+			If SaveWorld(f, WorldFileRLE) Then
 			WorldFile.Delete
 			f.MoveFileTo(WorldFile)
-			ElseIf MsgBox("Unable to save world! Quit anyway?", 4 + 16, "Error") = 6 Then
-			bs.Close
-			Else
-			bs.Close
+			ElseIf MsgBox("Unable to save world! Quit anyway?", 4 + 16, "Error") <> 6 Then
+			Return True
 			End If
 			End Select
 			Reset(False, True)
@@ -401,6 +393,29 @@ End
 			RenderThread.Run
 			Else
 			WorldLock.Release
+			End If
+			
+			Return True
+			
+		End Function
+	#tag EndMenuHandler
+
+	#tag MenuHandler
+		Function ConvertItem() As Boolean Handles ConvertItem.Action
+			Dim f As FolderItem = GetOpenFolderItem(FileTypes1.RLEEncodedGOLSavedWorld)
+			If f <> Nil And f.Exists Then
+			Dim g As FolderItem = GetSaveFolderItem(FileTypes1.RLEEncodedGOLSavedWorld, "Converted_" + f.Name)
+			If g <> Nil Then
+			pleasewait.Show
+			Dim data As String
+			Dim ins As BinaryStream = BinaryStream.Open(f)
+			Dim out As BinaryStream = BinaryStream.Create(g, True)
+			data = ins.Read(ins.Length)
+			ins.Close
+			out.Write(ConvertRLEFormat(data))
+			out.Close
+			pleasewait.Close
+			End If
 			End If
 			
 			Return True
@@ -553,9 +568,7 @@ End
 			dlg.Title = "Save GOL world"
 			If dlg.ShowModal <> Nil Then
 			WorldFileRLE = NthField(dlg.Result.Name, ".", CountFields(dlg.Result.Name, ".")) <> "gol"
-			Dim bs As BinaryStream = BinaryStream.Create(dlg.Result, True)
-			Call SaveWorld(bs, WorldFileRLE)
-			bs.Close
+			Call SaveWorld(dlg.Result, WorldFileRLE)
 			WorldFile = dlg.Result
 			Modified = False
 			End If
@@ -591,9 +604,7 @@ End
 			End If
 			
 			If f <> Nil Then
-			Dim bs As BinaryStream = BinaryStream.Create(f, True)
-			Call SaveWorld(bs, WorldFileRLE)
-			bs.Close
+			Call SaveWorld(f, WorldFileRLE)
 			WorldFile = f
 			Modified = False
 			End If
@@ -645,6 +656,32 @@ End
 		    TryCount = TryCount - 1
 		  Wend
 		  Return TryCount > 0
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function ConvertRLEFormat(Standard As String) As String
+		  Dim w, h As Integer
+		  Dim out As String = ReplaceLineEndings(Standard, EndOfLine.Windows)
+		  out = ""
+		  Dim l As String = NthField(out, EndOfLine.Windows, 1)
+		  out = Replace(out, l, "").Trim
+		  Dim x, y, r As String
+		  x = NthField(l, ",", 1)
+		  y = NthField(l, ",", 2)
+		  r = NthField(l, ",", 3)
+		  w = Val(NthField(x, "=", 2).Trim)
+		  h = Val(NthField(y, "=", 2).Trim)
+		  r = NthField(r, "=", 2).Trim
+		  r = NthField(r, "/", 1) + "/" + NthField(r, "/", 2)
+		  r = Replace(r, "B", "")
+		  r = Replace(r, "S", "")
+		  r = Replace(r, "b", "")
+		  r = Replace(r, "s", "")
+		  out = "RLE" + Format(w, "############") + "*" + Format(h, "############") + "R" + r + "#" + out
+		  'x = 251, y = 815, rule = B2/S0
+		  Return out
+		  
 		End Function
 	#tag EndMethod
 
@@ -722,7 +759,13 @@ End
 		  If rle Then
 		    pleasewait.Status.Text = "Decoding world data..."
 		    pleasewait.Status.Refresh
-		    s = RLDecode(s)
+		    Dim r As New RLEStream(s)
+		    Dim rd As String
+		    While Not r.EOF
+		      rd = rd + r.Read(64)
+		      pleasewait.ProgressBar1.Value = r.Position * 100 / r.Length
+		    Wend
+		    s = rd
 		  End If
 		  Dim count, ln As Integer
 		  ln = s.Len
@@ -869,66 +912,17 @@ End
 		End Sub
 	#tag EndMethod
 
-	#tag Method, Flags = &h21
-		Private Function RLDecode(Data As MemoryBlock) As String
-		  Dim sz As Integer = Data.Size - 1
-		  Dim rCount, outP, m As String
-		  
-		  For i As Integer = 0 To sz
-		    If i Mod 10 = 0 Then pleasewait.ProgressBar1.Value = i * 100 / sz
-		    m = Data.StringValue(i, 1)
-		    Select Case m
-		    Case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
-		      rCount = rCount + m
-		    Case Else
-		      If Val(rCount) > 0 Then
-		        For z As Integer = 1 To Val(rCount)
-		          outP = outP + m
-		        Next
-		        rCount = ""
-		      Else
-		        outP = outP + m
-		      End If
-		    End Select
-		  Next
-		  
-		  Return outp
-		END FUNCTION
-	#tag EndMethod
-
-	#tag Method, Flags = &h21
-		Private Function RLEncode(Data As MemoryBlock) As String
-		  Dim tmp1, tmp2, outP As String
-		  Dim Loop0, rCount As Integer
-		  tmp1 = Data.StringValue(0, 1)
-		  tmp2 = tmp1
-		  rCount = 1
-		  For Loop0 = 1 To Data.Size - 1
-		    tmp1 = Data.StringValue(Loop0, 1)
-		    If tmp1 <> tmp2 Then
-		      If rCount > 1 Then
-		        tmp2 = Str(rCount).Trim + tmp2
-		      End If
-		      outP = outP + tmp2
-		      tmp2 = tmp1
-		      rCount = 1
-		    Else
-		      rCount = rCount + 1
-		    End If
-		  Next
-		  
-		  outP = outP + Str(rCount).Trim
-		  outP = outP + tmp2
-		  Return outP
-		END FUNCTION
-	#tag EndMethod
-
 	#tag Method, Flags = &h0
-		Function SaveWorld(WriteTo As Writeable, RLE As Boolean) As Boolean
+		Function SaveWorld(f As FolderItem, RLE As Boolean) As Boolean
 		  pleasewait.Show
 		  pleasewait.Status.Text = "Saving world..."
 		  pleasewait.Status.Refresh
-		  
+		  Dim WriteTo As Writeable
+		  If RLE Then
+		    WriteTo = RLEStream.Create(f, True)
+		  Else
+		    WriteTo = BinaryStream.Create(f, True)
+		  End If
 		  Dim X, Y As Integer
 		  X = UBound(RenderWorld, 1)
 		  Y = UBound(RenderWorld, 2)
@@ -942,34 +936,27 @@ End
 		  Next
 		  If Not RLE Then
 		    WriteTo.Write("GOL" + Format(X + 1, "#########0") + "*" + Format(Y + 1, "#########0") + "R" + r + "#")
-		    For i As Integer = 0 To X
-		      For j As Integer = 0 To Y
-		        If RenderWorld(i, j) = alive Then
-		          WriteTo.Write("X")
-		        ElseIf RenderWorld(i, j) = dead Then
-		          WriteTo.Write("-")
-		        End If
-		      Next
-		      WriteTo.Write("!")
-		    Next
-		    WriteTo.Write("EOF")
 		  Else
+		    RLEStream(WriteTo).RawIO = True
 		    WriteTo.Write("RLE" + Format(X + 1, "#########0") + "*" + Format(Y + 1, "#########0") + "R" + r + "#")
-		    Dim data As New MemoryBlock(UBound(RenderWorld, 1) * UBound(RenderWorld, 2))
-		    Dim w As New BinaryStream(data)
-		    For i As Integer = 0 To X
-		      For j As Integer = 0 To Y
-		        If RenderWorld(i, j) = alive Then
-		          w.Write("X")
-		        ElseIf RenderWorld(i, j) = dead Then
-		          w.Write("-")
-		        End If
-		      Next
-		      w.Write("!")
+		    RLEStream(WriteTo).RawIO = False
+		  End If
+		  For i As Integer = 0 To X
+		    For j As Integer = 0 To Y
+		      If RenderWorld(i, j) = alive Then
+		        WriteTo.Write("X")
+		      ElseIf RenderWorld(i, j) = dead Then
+		        WriteTo.Write("-")
+		      End If
 		    Next
-		    w.Close
-		    Data = RLEncode(Data)
-		    WriteTo.Write(data)
+		    WriteTo.Write("!")
+		  Next
+		  'WriteTo.Write("EOF")
+		  WriteTo.Flush
+		  If RLE Then
+		    RLEStream(WriteTo).Close
+		  Else
+		    BinaryStream(WriteTo).Close
 		  End If
 		  Modified = False
 		  pleasewait.Close
