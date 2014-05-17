@@ -598,7 +598,7 @@ End
 			dlg.SuggestedFileName = "New World"
 			dlg.Title = "Save GOL world"
 			If dlg.ShowModal <> Nil Then
-			WorldFileRLE = NthField(dlg.Result.Name, ".", CountFields(dlg.Result.Name, ".")) <> "gol"
+			WorldFileRLE = True' NthField(dlg.Result.Name, ".", CountFields(dlg.Result.Name, ".")) <> "gol"
 			f = dlg.Result
 			End If
 			End If
@@ -808,6 +808,7 @@ End
 		    System.DebugLog(CurrentMethodName + " has released the world lock.")
 		  #endif
 		  pleasewait.Status.Text = "Drawing world..."
+		  pleasewait.Status.Refresh
 		  Repaint
 		  Modified = False
 		  Canvas1.Invalidate
