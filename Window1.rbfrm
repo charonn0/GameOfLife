@@ -727,16 +727,27 @@ End
 		  Dim x As Integer
 		  Dim rle As Boolean
 		  Dim sz As String
-		  Select Case Data.StringValue(0, 3)
+		  Dim r As New RLEStream(Data)
+		  r.RawIO = True
+		  
+		  Select Case r.Read(3)
 		  Case "GOL"
 		    rle = False
-		    sz = Replace(NthField(Data, "#", 1), "GOL", "")
 		  Case "RLE"
 		    rle = True
-		    sz = Replace(NthField(Data, "#", 1), "RLE", "")
 		  Else
 		    Raise New UnsupportedFormatException
 		  End Select
+		  
+		  While Not r.EOF
+		    Dim c As String = r.Read(1)
+		    If c = "#" Then
+		      Exit While
+		    Else
+		      sz = sz + c
+		    End If
+		  Wend
+		  
 		  Dim rules As String = NthField(sz, "R", 2)
 		  sz = NthField(sz, "R", 1)
 		  Dim sX, sY As Integer
@@ -750,39 +761,27 @@ End
 		    Return
 		  End If
 		  Dim tmp() As String = Split(NthField(rules, "/", 1), "")
-		  For Each r As String In tmp
-		    SurviveRules.Append(Val(r))
+		  For Each rule As String In tmp
+		    SurviveRules.Append(Val(rule))
 		  Next
 		  tmp = Split(NthField(rules, "/", 2), "")
-		  For Each r As String In tmp
-		    BornRules.Append(Val(r))
+		  For Each rule As String In tmp
+		    BornRules.Append(Val(rule))
 		  Next
 		  
 		  ReDim LifeWorld(sX, sY)
 		  ReDim RenderWorld(sX, sY)
 		  
 		  Reset(False)
-		  Dim s As String = NthField(data, "#", 2)
-		  If rle Then
-		    pleasewait.Status.Text = "Decoding world data..."
-		    pleasewait.Status.Refresh
-		    Dim r As New RLEStream(s)
-		    Dim rd As String
-		    While Not r.EOF
-		      rd = rd + r.Read(64)
-		      pleasewait.ProgressBar1.Value = r.Position * 100 / r.Length
-		    Wend
-		    s = rd
-		  End If
 		  Dim count, ln As Integer
-		  ln = s.Len
+		  ln = sX * sY
 		  pleasewait.Status.Text = "Loading world..."
 		  pleasewait.Status.Refresh
-		  
-		  For p As Integer = 1 To ln
+		  r.RawIO = Not rle
+		  While Not r.EOF
 		    If count Mod 10 = 0 Then pleasewait.ProgressBar1.Value = count * 100 / ln
 		    count = count + 1
-		    Dim char As String = Mid(s, p, 1)
+		    Dim char As String = r.Read(1)
 		    Select Case char
 		    Case "X", "o"
 		      RenderWorld(X, Y) = alive
@@ -798,11 +797,11 @@ End
 		      Y = 0
 		    Else
 		      'If char = "E" And ReadFrom.Read(2) = "OF" Then
-		      Exit For
+		      Exit While
 		      'Raise New UnsupportedFormatException
 		    End Select
 		    App.YieldToNextThread
-		  Next
+		  Wend
 		  WorldLock.Release
 		  #If DebugBuild Then
 		    System.DebugLog(CurrentMethodName + " has released the world lock.")

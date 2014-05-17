@@ -1,6 +1,6 @@
 #tag Class
 Protected Class RLEStream
-Implements Readable, Writeable
+Implements Readable,Writeable
 	#tag Method, Flags = &h0
 		Sub Close()
 		  IOStream.Close
@@ -78,20 +78,23 @@ Implements Readable, Writeable
 		  Dim ret As String
 		  Dim rcount As String
 		  While Not IOStream.EOF
+		    If Runcount >= Count Then
+		      For i As Integer = 1 To Count
+		        ret = ret + RunChar
+		        Runcount = Runcount - 1
+		      Next
+		      If Runcount = 0 Then RunChar = ""
+		    End If
 		    If ret.Len >= Count Then Return ret
 		    Dim m As String = IOStream.Read(1)
 		    Select Case m
 		    Case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
-		      rCount = rCount + m
+		      rcount = rcount + m
 		    Case Else
-		      If Val(rCount) > 0 Then
-		        For z As Integer = 1 To Val(rCount)
-		          ret = ret + m
-		        Next
-		        rCount = ""
-		      Else
-		        ret = ret + m
-		      End If
+		      If rcount.Trim = "" Then rcount = "1"
+		      Runcount = Val(rcount)
+		      RunChar = m
+		      rcount = ""
 		    End Select
 		  Wend
 		  
@@ -109,7 +112,7 @@ Implements Readable, Writeable
 	#tag Method, Flags = &h0
 		Sub Write(text As String)
 		  // Part of the Writeable interface.
-		  If RawIO Then 
+		  If RawIO Then
 		    IOStream.Write(text)
 		    Return
 		  End If
@@ -179,6 +182,12 @@ Implements Readable, Writeable
 			Visible=true
 			Group="ID"
 			InheritedFrom="Object"
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="RawIO"
+			Group="Behavior"
+			InitialValue="False"
+			Type="Boolean"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Super"
