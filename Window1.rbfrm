@@ -739,6 +739,16 @@ End
 		  End Select
 		  Dim rules As String = NthField(sz, "R", 2)
 		  sz = NthField(sz, "R", 1)
+		  Dim sX, sY As Integer
+		  sX = Val(NthField(sz, "*", 1))
+		  sY = Val(NthField(sz, "*", 2))
+		  If sX > UBound(RenderWorld, 1) Then CellSize = World.Width / sX
+		  If sX > 65535 Or sY > 65635 Then
+		    MsgBox("I'm sorry, this world is too large!")
+		    WorldLock.Release
+		    pleasewait.Close
+		    Return
+		  End If
 		  Dim tmp() As String = Split(NthField(rules, "/", 1), "")
 		  For Each r As String In tmp
 		    SurviveRules.Append(Val(r))
@@ -747,10 +757,7 @@ End
 		  For Each r As String In tmp
 		    BornRules.Append(Val(r))
 		  Next
-		  Dim sX, sY As Integer
-		  sX = Val(NthField(sz, "*", 1))
-		  sY = Val(NthField(sz, "*", 2))
-		  If sX > UBound(RenderWorld, 1) Then CellSize = World.Width / sX
+		  
 		  ReDim LifeWorld(sX, sY)
 		  ReDim RenderWorld(sX, sY)
 		  
@@ -780,6 +787,7 @@ End
 		    Case "X", "o"
 		      RenderWorld(X, Y) = alive
 		      LifeWorld(X, Y) = alive
+		      LifeCount = LifeCount + 1
 		      Y = Y + 1
 		    Case "-", "b"
 		      RenderWorld(X, Y) = dead
@@ -941,13 +949,16 @@ End
 		    WriteTo.Write("RLE" + Format(X + 1, "#########0") + "*" + Format(Y + 1, "#########0") + "R" + r + "#")
 		    RLEStream(WriteTo).RawIO = False
 		  End If
+		  Dim pos As Integer
 		  For i As Integer = 0 To X
+		    If i Mod 5 = 0 Then pleasewait.ProgressBar1.Value = pos * 100 / (X * Y)
 		    For j As Integer = 0 To Y
 		      If RenderWorld(i, j) = alive Then
 		        WriteTo.Write("X")
 		      ElseIf RenderWorld(i, j) = dead Then
 		        WriteTo.Write("-")
 		      End If
+		      pos = pos + 1
 		    Next
 		    WriteTo.Write("!")
 		  Next
