@@ -477,8 +477,9 @@ End
 			Dim f As FolderItem = GetOpenFolderItem(FileTypes1.All)
 			If f <> Nil Then
 			Dim bs As BinaryStream = BinaryStream.Open(f, True)
-			LoadWorld(bs)
+			Dim data As MemoryBlock = bs.Read(bs.Length)
 			bs.Close
+			LoadWorld(data)
 			WorldFile = f
 			End If
 			Return True
@@ -626,9 +627,6 @@ End
 			Else
 			RenderThread.Run
 			End Select
-			
-			Return True
-			
 			Return True
 			
 		End Function
@@ -678,7 +676,7 @@ End
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub LoadWorld(ReadFrom As Readable)
+		Sub LoadWorld(Data As MemoryBlock)
 		  pleasewait.Show
 		  If Not AcquireWorldLock() Then
 		    MsgBox(CurrentMethodName + ": Unable to lock world!")
@@ -692,22 +690,16 @@ End
 		  Dim x As Integer
 		  Dim rle As Boolean
 		  Dim sz As String
-		  Select Case ReadFrom.Read(3)
+		  Select Case Data.StringValue(0, 3)
 		  Case "GOL"
 		    rle = False
+		    sz = Replace(NthField(Data, "#", 1), "GOL", "")
 		  Case "RLE"
 		    rle = True
+		    sz = Replace(NthField(Data, "#", 1), "RLE", "")
 		  Else
 		    Raise New UnsupportedFormatException
 		  End Select
-		  While Not ReadFrom.EOF
-		    Dim char As String = ReadFrom.Read(1)
-		    If char = "#" Then
-		      Exit While
-		    Else
-		      sz = sz + char
-		    End If
-		  Wend
 		  Dim rules As String = NthField(sz, "R", 2)
 		  sz = NthField(sz, "R", 1)
 		  Dim tmp() As String = Split(NthField(rules, "/", 1), "")
@@ -722,18 +714,25 @@ End
 		  sX = Val(NthField(sz, "*", 1))
 		  sY = Val(NthField(sz, "*", 2))
 		  If sX > UBound(RenderWorld, 1) Then CellSize = World.Width / sX
-		  Reset(False)
-		  If rle Then
-		    Dim s As String
-		    While Not ReadFrom.EOF
-		      s = s + ReadFrom.Read(1)
-		    Wend
-		    s = RLDecode(s)
-		    ReadFrom = New BinaryStream(s)
-		  End If
+		  ReDim LifeWorld(sX, sY)
+		  ReDim RenderWorld(sX, sY)
 		  
-		  While Not ReadFrom.EOF
-		    Dim char As String = ReadFrom.Read(1)
+		  Reset(False)
+		  Dim s As String = NthField(data, "#", 2)
+		  If rle Then
+		    pleasewait.Status.Text = "Decoding world data..."
+		    pleasewait.Status.Refresh
+		    s = RLDecode(s)
+		  End If
+		  Dim count, ln As Integer
+		  ln = s.Len
+		  pleasewait.Status.Text = "Loading world..."
+		  pleasewait.Status.Refresh
+		  
+		  For p As Integer = 1 To ln
+		    If count Mod 10 = 0 Then pleasewait.ProgressBar1.Value = count * 100 / ln
+		    count = count + 1
+		    Dim char As String = Mid(s, p, 1)
 		    Select Case char
 		    Case "X", "o"
 		      RenderWorld(X, Y) = alive
@@ -748,14 +747,16 @@ End
 		      Y = 0
 		    Else
 		      'If char = "E" And ReadFrom.Read(2) = "OF" Then
-		      Exit While
+		      Exit For
 		      'Raise New UnsupportedFormatException
 		    End Select
-		  Wend
+		    App.YieldToNextThread
+		  Next
 		  WorldLock.Release
 		  #If DebugBuild Then
 		    System.DebugLog(CurrentMethodName + " has released the world lock.")
 		  #endif
+		  pleasewait.Status.Text = "Drawing world..."
 		  Repaint
 		  Modified = False
 		  Canvas1.Invalidate
@@ -870,10 +871,12 @@ End
 
 	#tag Method, Flags = &h21
 		Private Function RLDecode(Data As MemoryBlock) As String
-		  Dim Loop0 As Integer, rCount As String, outP As String, m As String
+		  Dim sz As Integer = Data.Size - 1
+		  Dim rCount, outP, m As String
 		  
-		  For Loop0 = 0 To Data.Size - 1
-		    m = Data.StringValue(Loop0, 1)
+		  For i As Integer = 0 To sz
+		    If i Mod 10 = 0 Then pleasewait.ProgressBar1.Value = i * 100 / sz
+		    m = Data.StringValue(i, 1)
 		    Select Case m
 		    Case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
 		      rCount = rCount + m
@@ -903,7 +906,9 @@ End
 		  For Loop0 = 1 To Data.Size - 1
 		    tmp1 = Data.StringValue(Loop0, 1)
 		    If tmp1 <> tmp2 Then
-		      tmp2 = Str(rCount).Trim + tmp2
+		      If rCount > 1 Then
+		        tmp2 = Str(rCount).Trim + tmp2
+		      End If
 		      outP = outP + tmp2
 		      tmp2 = tmp1
 		      rCount = 1
@@ -921,6 +926,8 @@ End
 	#tag Method, Flags = &h0
 		Function SaveWorld(WriteTo As Writeable, RLE As Boolean) As Boolean
 		  pleasewait.Show
+		  pleasewait.Status.Text = "Saving world..."
+		  pleasewait.Status.Refresh
 		  
 		  Dim X, Y As Integer
 		  X = UBound(RenderWorld, 1)
@@ -1181,6 +1188,12 @@ End
 		    If Modified Then m = "*"
 		    m = " - " + WorldFile.Name + m
 		  End If
+		  Select Case RenderThread.State
+		  Case Thread.Running, Thread.Sleeping
+		    m = m + " (running)"
+		  Case Thread.Suspended
+		    m = m + " (suspended)"
+		  End Select
 		  Self.Title = "Game of life" + m
 		  ' Rule: 2/23       Gen:0       Pop:0       Dim:0x0
 		  
@@ -1204,8 +1217,9 @@ End
 		    Reset(False, True)
 		    WorldLock.Release
 		    Dim bs As BinaryStream = BinaryStream.Open(App.LoadFile)
-		    LoadWorld(bs)
+		    Dim data As MemoryBlock = bs.Read(bs.Length)
 		    bs.Close
+		    LoadWorld(data)
 		    WorldFile = App.LoadFile
 		    App.LoadFile = Nil
 		  End If
