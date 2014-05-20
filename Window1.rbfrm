@@ -347,6 +347,8 @@ End
 			System.DebugLog(CurrentMethodName + " failed to acquire the world lock.")
 			#endif
 			End If
+			LifeCount = 0
+			UpdateUI
 			Return True
 			
 		End Function
@@ -521,6 +523,7 @@ End
 			System.DebugLog(CurrentMethodName + " failed to acquire the world lock.")
 			#endif
 			End If
+			UpdateUI()
 			Return True
 			
 		End Function
@@ -638,6 +641,7 @@ End
 			Else
 			RenderThread.Run
 			End Select
+			UpdateUI()
 			Return True
 			
 		End Function
@@ -905,10 +909,12 @@ End
 		  GenCount = 0
 		  If Populate Then
 		    Dim rand As New Random
+		    LifeCount = 0
 		    For X As Integer = 0 To UBound(LifeWorld, 1)
 		      For Y As Integer = 0 To UBound(LifeWorld, 2)
 		        If Rand.InRange(2, 10) = 8 Then
 		          LifeWorld(X, Y) = alive
+		          LifeCount = LifeCount + 1
 		        Else
 		          LifeWorld(X, Y) = dead
 		        End If
@@ -987,6 +993,55 @@ End
 		      RenderWorld(X, Y) = LifeWorld(X, Y)
 		    Next
 		  Next
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub UpdateUI()
+		  Dim sx, sy As Integer
+		  sx = UBound(RenderWorld, 1)
+		  sy = UBound(RenderWorld, 2)
+		  Dim m As String
+		  If WorldFile <> Nil Then
+		    If Modified Then m = "*"
+		    m = " - " + WorldFile.Name + m
+		  End If
+		  Select Case RenderThread.State
+		  Case Thread.Running, Thread.Sleeping
+		    m = m + " (running)"
+		  Case Thread.Suspended
+		    m = m + " (suspended)"
+		  End Select
+		  Self.Title = "Game of life" + m
+		  ' Rule: 2/23       Gen:0       Pop:0       Dim:0x0
+		  
+		  Dim rl, gn, pp, dm As String
+		  BornRules.Sort
+		  SurviveRules.Sort
+		  For i As Integer = 0 To UBound(BornRules)
+		    rl = rl + Str(BornRules(i))
+		  Next
+		  rl = rl + "/"
+		  For i As Integer = 0 To UBound(SurviveRules)
+		    rl = rl + Str(SurviveRules(i))
+		  Next
+		  rl = "Rule: " + rl
+		  gn = "Gen: " + Format(GenCount, "###,###,###,###,###,###,##0")
+		  pp = "Pop: " + Format(LifeCount, "###,###,##0") + "/" + Format(sx * sy, "###,###,##0")
+		  dm = "Dim: " + Format(sx, "###,###,##0") + "x" + Format(sy, "###,###,##0")
+		  Status.Text = rl + "    " + dm + "     " + gn + "     " + pp
+		  
+		  If App.LoadFile <> Nil And App.LoadFile.Exists And Not App.LoadFile.Directory Then
+		    Reset(False, True)
+		    WorldLock.Release
+		    Dim bs As BinaryStream = BinaryStream.Open(App.LoadFile)
+		    Dim data As MemoryBlock = bs.Read(bs.Length)
+		    bs.Close
+		    LoadWorld(data)
+		    WorldFile = App.LoadFile
+		    App.LoadFile = Nil
+		  End If
 		  
 		End Sub
 	#tag EndMethod
@@ -1148,9 +1203,11 @@ End
 		    If LifeWorld(cellX, cellY) = dead Then
 		      LifeWorld(cellX, cellY) = alive
 		      RenderWorld(cellX, cellY) = alive
+		      LifeCount = LifeCount + 1
 		    Else
 		      LifeWorld(cellX, cellY) = dead
 		      RenderWorld(cellX, cellY) = dead
+		      LifeCount = LifeCount - 1
 		    End If
 		    Modified = True
 		    
@@ -1163,6 +1220,7 @@ End
 		    MsgBox(CurrentMethodName + ": Unable to lock world!")
 		  End If
 		  Me.Refresh(False)
+		  UpdateUI
 		End Function
 	#tag EndEvent
 	#tag Event
@@ -1178,50 +1236,7 @@ End
 #tag Events Timer1
 	#tag Event
 		Sub Action()
-		  Dim sx, sy As Integer
-		  sx = UBound(RenderWorld, 1)
-		  sy = UBound(RenderWorld, 2)
-		  Dim m As String
-		  If WorldFile <> Nil Then
-		    If Modified Then m = "*"
-		    m = " - " + WorldFile.Name + m
-		  End If
-		  Select Case RenderThread.State
-		  Case Thread.Running, Thread.Sleeping
-		    m = m + " (running)"
-		  Case Thread.Suspended
-		    m = m + " (suspended)"
-		  End Select
-		  Self.Title = "Game of life" + m
-		  ' Rule: 2/23       Gen:0       Pop:0       Dim:0x0
-		  
-		  Dim rl, gn, pp, dm As String
-		  BornRules.Sort
-		  SurviveRules.Sort
-		  For i As Integer = 0 To UBound(BornRules)
-		    rl = rl + Str(BornRules(i))
-		  Next
-		  rl = rl + "/"
-		  For i As Integer = 0 To UBound(SurviveRules)
-		    rl = rl + Str(SurviveRules(i))
-		  Next
-		  rl = "Rule: " + rl
-		  gn = "Gen: " + Format(GenCount, "###,###,###,###,###,###,##0")
-		  pp = "Pop: " + Format(LifeCount, "###,###,##0") + "/" + Format(sx * sy, "###,###,##0")
-		  dm = "Dim: " + Format(sx, "###,###,##0") + "x" + Format(sy, "###,###,##0")
-		  Status.Text = rl + "    " + dm + "     " + gn + "     " + pp
-		  
-		  If App.LoadFile <> Nil And App.LoadFile.Exists And Not App.LoadFile.Directory Then
-		    Reset(False, True)
-		    WorldLock.Release
-		    Dim bs As BinaryStream = BinaryStream.Open(App.LoadFile)
-		    Dim data As MemoryBlock = bs.Read(bs.Length)
-		    bs.Close
-		    LoadWorld(data)
-		    WorldFile = App.LoadFile
-		    App.LoadFile = Nil
-		  End If
-		  
+		  UpdateUI()
 		End Sub
 	#tag EndEvent
 #tag EndEvents
