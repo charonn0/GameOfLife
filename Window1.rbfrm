@@ -331,24 +331,7 @@ End
 
 	#tag MenuHandler
 		Function ClearWorld() As Boolean Handles ClearWorld.Action
-			If AcquireWorldLock() Then
-			#If DebugBuild Then
-			System.DebugLog(CurrentMethodName + " has acquired the world lock.")
-			#endif
-			Reset(False, True)
-			Repaint()
-			Canvas1.Invalidate
-			WorldLock.Release
-			#If DebugBuild Then
-			System.DebugLog(CurrentMethodName + " has released the world lock.")
-			#endif
-			Else
-			#If DebugBuild Then
-			System.DebugLog(CurrentMethodName + " failed to acquire the world lock.")
-			#endif
-			End If
-			LifeCount = 0
-			UpdateUI
+			ClearAll()
 			Return True
 			
 		End Function
@@ -664,6 +647,29 @@ End
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
+		Sub ClearAll()
+		  If AcquireWorldLock() Then
+		    #If DebugBuild Then
+		      System.DebugLog(CurrentMethodName + " has acquired the world lock.")
+		    #endif
+		    Reset(False, True)
+		    Repaint()
+		    Canvas1.Invalidate
+		    WorldLock.Release
+		    #If DebugBuild Then
+		      System.DebugLog(CurrentMethodName + " has released the world lock.")
+		    #endif
+		  Else
+		    #If DebugBuild Then
+		      System.DebugLog(CurrentMethodName + " failed to acquire the world lock.")
+		    #endif
+		  End If
+		  LifeCount = 0
+		  UpdateUI
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
 		Function ConvertRLEFormat(Standard As String) As String
 		  Dim w, h As Integer
 		  Dim out As String = ReplaceLineEndings(Standard, EndOfLine.Windows)
@@ -782,7 +788,8 @@ End
 		  pleasewait.Status.Text = "Loading world..."
 		  pleasewait.Status.Refresh
 		  r.RawIO = Not rle
-		  While Not r.EOF
+		  Dim ok As Boolean = True
+		  While Not r.EOF And ok
 		    If count Mod 10 = 0 Then pleasewait.ProgressBar1.Value = count * 100 / ln
 		    count = count + 1
 		    Dim char As String = r.Read(1)
@@ -800,11 +807,12 @@ End
 		      X = X + 1
 		      Y = 0
 		    Else
-		      'If char = "E" And ReadFrom.Read(2) = "OF" Then
-		      Exit While
-		      'Raise New UnsupportedFormatException
+		      If LenB(char) = 0 Then Continue
+		      If char = "E"  And r.Read(2) = "OF" Then Continue ' old format
+		      ok = False
+		      Raise New UnsupportedFormatException
 		    End Select
-		    App.YieldToNextThread
+		    If X Mod 5 = 0 Then App.YieldToNextThread
 		  Wend
 		  WorldLock.Release
 		  #If DebugBuild Then
@@ -1090,6 +1098,10 @@ End
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
+		Private LastAction As Pair
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
 		Private LastWorld As Picture
 	#tag EndProperty
 
@@ -1214,7 +1226,7 @@ End
 		    Repaint()
 		    WorldLock.Release
 		    #If DebugBuild Then
-		      System.DebugLog(CurrentMethodName + " has acquired the world lock.")
+		      System.DebugLog(CurrentMethodName + " has released the world lock.")
 		    #endif
 		  Else
 		    MsgBox(CurrentMethodName + ": Unable to lock world!")
