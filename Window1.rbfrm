@@ -1159,6 +1159,9 @@ End
 		  Status.Text = rl + "    " + dm + "     " + gn + "     " + pp
 		  
 		  If App.LoadFile <> Nil And App.LoadFile.Exists And Not App.LoadFile.Directory Then
+		    While Not AcquireWorldLock()
+		      App.YieldToNextThread
+		    Wend
 		    Reset(False, True)
 		    WorldLock.Release
 		    Dim bs As BinaryStream = BinaryStream.Open(App.LoadFile)
