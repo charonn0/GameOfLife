@@ -389,18 +389,14 @@ End
 		Function ConvertItem() As Boolean Handles ConvertItem.Action
 			Dim f As FolderItem = GetOpenFolderItem(FileTypes1.RLEEncodedGOLSavedWorld)
 			If f <> Nil And f.Exists Then
-			Dim g As FolderItem = GetSaveFolderItem(FileTypes1.RLEEncodedGOLSavedWorld, "Converted_" + f.Name)
-			If g <> Nil Then
 			pleasewait.Show
 			Dim data As String
 			Dim ins As BinaryStream = BinaryStream.Open(f)
-			Dim out As BinaryStream = BinaryStream.Create(g, True)
 			data = ins.Read(ins.Length)
 			ins.Close
-			out.Write(ConvertRLEFormat(data))
-			out.Close
+			data = ConvertRLEFormat(data)
 			pleasewait.Close
-			End If
+			LoadWorld(data)
 			End If
 			
 			Return True
@@ -671,9 +667,16 @@ End
 
 	#tag Method, Flags = &h0
 		Function ConvertRLEFormat(Standard As String) As String
-		  Dim w, h As Integer
 		  Dim out As String = ReplaceLineEndings(Standard, EndOfLine.Windows)
-		  out = ""
+		  Dim lines() As String = Split(out, EndOfLine.Windows)
+		  For i As Integer = UBound(lines) DownTo 0
+		    If Left(lines(i), 1) = "#" Then ' comment
+		      lines.Remove(i)
+		    End If
+		  Next
+		  out = Join(lines, EndOfLine.Windows)
+		  Dim w, h As Integer
+		  'out = ""
 		  Dim l As String = NthField(out, EndOfLine.Windows, 1)
 		  out = Replace(out, l, "").Trim
 		  Dim x, y, r As String
@@ -688,7 +691,7 @@ End
 		  r = Replace(r, "S", "")
 		  r = Replace(r, "b", "")
 		  r = Replace(r, "s", "")
-		  out = "RLE" + Format(w, "############") + "*" + Format(h, "############") + "R" + r + "#" + out
+		  out = "RLE" + Format(w, "############") + "*" + Format(h, "############") + "R" + r.Trim + "#" + ReplaceLineEndings(out.Trim, "")
 		  'x = 251, y = 815, rule = B2/S0
 		  Return out
 		  
@@ -724,6 +727,121 @@ End
 
 	#tag Method, Flags = &h0
 		Sub LoadWorld(Data As MemoryBlock)
+		  pleasewait.Show
+		  If Not AcquireWorldLock() Then
+		    MsgBox(CurrentMethodName + ": Unable to lock world!")
+		  End If
+		  #If DebugBuild Then
+		    System.DebugLog(CurrentMethodName + " has acquired the world lock.")
+		  #endif
+		  ReDim BornRules(-1)
+		  ReDim SurviveRules(-1)
+		  Dim y As Integer
+		  Dim x As Integer
+		  Dim rle As Boolean
+		  Dim sz As String
+		  Dim r As New RLEStream(Data)
+		  r.RawIO = True
+		  
+		  Select Case r.Read(3)
+		  Case "GOL"
+		    rle = False
+		  Case "RLE"
+		    rle = True
+		  Else
+		    Raise New UnsupportedFormatException
+		  End Select
+		  
+		  While Not r.EOF
+		    Dim c As String = r.Read(1)
+		    If c = "#" Then
+		      Exit While
+		    Else
+		      sz = sz + c
+		    End If
+		  Wend
+		  
+		  Dim rules As String = NthField(sz, "R", 2)
+		  sz = NthField(sz, "R", 1)
+		  Dim sX, sY As Integer
+		  sX = Val(NthField(sz, "*", 1))
+		  sY = Val(NthField(sz, "*", 2))
+		  If sX > UBound(RenderWorld, 1) Then CellSize = World.Width / sX
+		  If sX > 65535 Or sY > 65635 Then
+		    MsgBox("I'm sorry, this world is too large!")
+		    WorldLock.Release
+		    pleasewait.Close
+		    Return
+		  End If
+		  Dim tmp() As String = Split(NthField(rules, "/", 1), "")
+		  For Each rule As String In tmp
+		    SurviveRules.Append(Val(rule))
+		  Next
+		  tmp = Split(NthField(rules, "/", 2), "")
+		  For Each rule As String In tmp
+		    BornRules.Append(Val(rule))
+		  Next
+		  
+		  ReDim LifeWorld(sX, sY)
+		  ReDim RenderWorld(sX, sY)
+		  
+		  Reset(False)
+		  Dim count, ln As Integer
+		  ln = sX * sY
+		  pleasewait.Status.Text = "Loading world..."
+		  pleasewait.Status.Refresh
+		  r.RawIO = Not rle
+		  Dim ok As Boolean = True
+		  While Not r.EOF And ok
+		    If count Mod 10 = 0 Then pleasewait.ProgressBar1.Value = count * 100 / ln
+		    count = count + 1
+		    Dim char As String = r.Read(1)
+		    Select Case char
+		    Case "X", "o"
+		      RenderWorld(X, Y) = alive
+		      LifeWorld(X, Y) = alive
+		      LifeCount = LifeCount + 1
+		      X = X + 1
+		    Case "-", "b"
+		      RenderWorld(X, Y) = dead
+		      LifeWorld(X, Y) = dead
+		      X = X + 1
+		    Case "!", "$"
+		      Y = Y + 1
+		      X = 0
+		    Else
+		      If LenB(char) = 0 Then Continue
+		      If char = "E"  And r.Read(2) = "OF" Then Continue ' old format
+		      ok = False
+		      Raise New UnsupportedFormatException
+		    End Select
+		    If X Mod 5 = 0 Then App.YieldToNextThread
+		  Wend
+		  WorldLock.Release
+		  #If DebugBuild Then
+		    System.DebugLog(CurrentMethodName + " has released the world lock.")
+		  #endif
+		  pleasewait.Status.Text = "Drawing world..."
+		  pleasewait.Status.Refresh
+		  Repaint
+		  Modified = False
+		  Canvas1.Invalidate
+		  
+		Exception Err As OutOfBoundsException
+		  Call MsgBox("Increase the window size or decrease the cell size to open this file.", 16, "World too large for current settings")
+		  WorldLock.Release
+		  
+		Exception Err As UnsupportedFormatException
+		  Call MsgBox("The file is corrupt.", 16, "Invalid data")
+		  WorldLock.Release
+		  
+		Finally
+		  pleasewait.Close
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub LoadWorldOld(Data As MemoryBlock)
 		  pleasewait.Show
 		  If Not AcquireWorldLock() Then
 		    MsgBox(CurrentMethodName + ": Unable to lock world!")
@@ -964,12 +1082,12 @@ End
 		    RLEStream(WriteTo).RawIO = False
 		  End If
 		  Dim pos As Integer
-		  For i As Integer = 0 To X
+		  For i As Integer = 0 To Y
 		    If i Mod 5 = 0 Then pleasewait.ProgressBar1.Value = pos * 100 / (X * Y)
-		    For j As Integer = 0 To Y
-		      If RenderWorld(i, j) = alive Then
+		    For j As Integer = 0 To X
+		      If RenderWorld(j, i) = alive Then
 		        WriteTo.Write("X")
-		      ElseIf RenderWorld(i, j) = dead Then
+		      ElseIf RenderWorld(j, i) = dead Then
 		        WriteTo.Write("-")
 		      End If
 		      pos = pos + 1
