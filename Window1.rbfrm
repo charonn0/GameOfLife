@@ -795,27 +795,30 @@ End
 		  While Not r.EOF And ok
 		    If count Mod 10 = 0 Then pleasewait.ProgressBar1.Value = count * 100 / ln
 		    count = count + 1
-		    Dim char As String = r.Read(1)
-		    Select Case char
-		    Case "X", "o"
-		      RenderWorld(X, Y) = alive
-		      LifeWorld(X, Y) = alive
-		      LifeCount = LifeCount + 1
-		      X = X + 1
-		    Case "-", "b"
-		      RenderWorld(X, Y) = dead
-		      LifeWorld(X, Y) = dead
-		      X = X + 1
-		    Case "!", "$"
-		      Y = Y + 1
-		      X = 0
-		    Else
-		      If LenB(char) = 0 Then Continue
-		      If char = "E"  And r.Read(2) = "OF" Then Continue ' old format
-		      ok = False
-		      Raise New UnsupportedFormatException
-		    End Select
-		    If X Mod 5 = 0 Then App.YieldToNextThread
+		    Dim char As MemoryBlock = r.Read(1024)
+		    Dim bs As New BinaryStream(char)
+		    While Not bs.EOF
+		      Select Case bs.Read(1)
+		      Case "X", "o"
+		        RenderWorld(X, Y) = alive
+		        LifeWorld(X, Y) = alive
+		        LifeCount = LifeCount + 1
+		        X = X + 1
+		      Case "-", "b"
+		        RenderWorld(X, Y) = dead
+		        LifeWorld(X, Y) = dead
+		        X = X + 1
+		      Case "!", "$"
+		        Y = Y + 1
+		        X = 0
+		      Else
+		        If LenB(char) = 0 Then Continue
+		        If char = "E"  And r.Read(2) = "OF" Then Continue ' old format
+		        ok = False
+		        Raise New UnsupportedFormatException
+		      End Select
+		      If X Mod 5 = 0 Then App.YieldToNextThread
+		    Wend
 		  Wend
 		  WorldLock.Release
 		  #If DebugBuild Then
@@ -1423,14 +1426,15 @@ End
 		      #If DebugBuild Then
 		        System.DebugLog(CurrentMethodName + " has released the world lock.")
 		      #endif
-		      App.YieldToNextThread
-		      If StepGen Then
-		        StepGen = False
-		        Me.Suspend
-		      Else
-		        Me.Sleep(ThreadSleep)
-		      End If
 		    End Try
+		    App.YieldToNextThread
+		    If StepGen Then
+		      StepGen = False
+		      Me.Suspend
+		    Else
+		      Me.Sleep(ThreadSleep)
+		    End If
+		    
 		  Loop
 		End Sub
 	#tag EndEvent

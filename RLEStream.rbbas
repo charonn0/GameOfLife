@@ -75,27 +75,34 @@ Implements Readable,Writeable
 		Function Read(Count As Integer, encoding As TextEncoding = Nil) As String
 		  // Part of the Readable interface.
 		  If RawIO Then Return IOStream.Read(Count, encoding)
-		  Dim ret As String
+		  Dim ret, curr As String
 		  Dim rcount As String
-		  While Not IOStream.EOF
-		    If Runcount >= Count Then
-		      For i As Integer = 1 To Count
+		  While Not IOStream.EOF And ret.Len < Count
+		    If Runcount = 0 Then 
+		      Do
+		        Dim m As String = IOStream.Read(1)
+		        Select Case m
+		        Case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
+		          rcount = rcount + m
+		        Case Else
+		          If rcount.Trim = "" Then rcount = "1"
+		          Runcount = Val(rcount)
+		          RunChar = m
+		          rcount = ""
+		          Exit Do
+		        End Select
+		      Loop
+		    Else
+		      For i As Integer = 0 To Count - 1
 		        ret = ret + RunChar
 		        Runcount = Runcount - 1
+		        If Runcount < 1 Then 
+		          Runcount = 0
+		          RunChar = ""
+		          Exit For
+		        End If
 		      Next
-		      If Runcount = 0 Then RunChar = ""
 		    End If
-		    If ret.Len >= Count Then Return ret
-		    Dim m As String = IOStream.Read(1)
-		    Select Case m
-		    Case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
-		      rcount = rcount + m
-		    Case Else
-		      If rcount.Trim = "" Then rcount = "1"
-		      Runcount = Val(rcount)
-		      RunChar = m
-		      rcount = ""
-		    End Select
 		  Wend
 		  
 		  Return DefineEncoding(ret, encoding)
