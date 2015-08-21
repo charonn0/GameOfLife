@@ -75,10 +75,10 @@ Implements Readable,Writeable
 		Function Read(Count As Integer, encoding As TextEncoding = Nil) As String
 		  // Part of the Readable interface.
 		  If RawIO Then Return IOStream.Read(Count, encoding)
-		  Dim ret, curr As String
+		  Dim ret As String
 		  Dim rcount As String
 		  While Not IOStream.EOF And ret.Len < Count
-		    If Runcount = 0 Then 
+		    If Runcount = 0 Then
 		      Do
 		        Dim m As String = IOStream.Read(1)
 		        Select Case m
@@ -96,7 +96,7 @@ Implements Readable,Writeable
 		      For i As Integer = 0 To Count - 1
 		        ret = ret + RunChar
 		        Runcount = Runcount - 1
-		        If Runcount < 1 Then 
+		        If Runcount < 1 Then
 		          Runcount = 0
 		          RunChar = ""
 		          Exit For
