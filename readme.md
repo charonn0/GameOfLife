@@ -1,1 +1,1 @@
-This version uses a Canvas control to display the world. See the DXPlugin branch for a DirectX version.
+This project implements a [Life](https://en.wikipedia.org/wiki/Conway's_Game_of_Life)-like [cellular automaton](https://en.wikipedia.org/wiki/Cellular_automaton) (LLCA) engine that can support any standard LLCA ruleset.
